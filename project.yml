@@ -8,6 +8,11 @@ options:
   knownRegions:
     - en
 
+packages:
+  RevenueCat:
+    url: https://github.com/RevenueCat/purchases-ios.git
+    from: 5.41.0
+
 targets:
   LookUpSilly:
     type: application
@@ -21,6 +26,12 @@ targets:
     resources:
       - path: LookUpSilly/Assets.xcassets
       - path: LookUpSilly/en.lproj
+      - path: LookUpSilly/Configuration.storekit
+    entitlements:
+      path: LookUpSilly/LookUpSilly.entitlements
+    dependencies:
+      - package: RevenueCat
+        product: RevenueCat
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.lookupsilly.app
@@ -53,6 +64,7 @@ targets:
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         UIUserInterfaceStyle: Dark
+        NSFamilyControlsUsageDescription: Look Up, Silly! needs Screen Time access to block distracting apps and help you stay focused.
 
 schemes:
   LookUpSilly:

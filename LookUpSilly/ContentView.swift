@@ -5,7 +5,7 @@ struct ContentView: View {
   
   var body: some View {
     if !appSettings.hasCompletedOnboarding {
-      OnboardingView()
+      OnboardingViewNew()
     } else {
       MainTabView()
     }

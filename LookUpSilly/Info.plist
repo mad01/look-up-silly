@@ -26,6 +26,8 @@
 	<string>public.app-category.utilities</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSFamilyControlsUsageDescription</key>
+	<string>Look Up, Silly! needs Screen Time access to block distracting apps and help you stay focused.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>

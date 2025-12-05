@@ -5,6 +5,17 @@ struct LookUpSillyApp: App {
   @StateObject private var appSettings = AppSettings()
   @State private var isReady = false
   
+  init() {
+    // MARK: - RevenueCat Configuration
+    // Uncomment to enable contribution system
+    // Requires: RevenueCat account, API key, and product setup
+    // See: REVENUECAT_SETUP.md for instructions
+    
+    // Task { @MainActor in
+    //   RevenueCatManager.shared.configure()
+    // }
+  }
+  
   var body: some Scene {
     WindowGroup {
       Group {

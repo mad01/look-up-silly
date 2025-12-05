@@ -2,21 +2,19 @@ import SwiftUI
 
 struct MainTabView: View {
   @EnvironmentObject var appSettings: AppSettings
-  @StateObject private var challengeManager = ChallengeManager()
   
   var body: some View {
     TabView {
-      HomeView()
+      HomeViewNew()
         .tabItem {
           Label("Home", systemImage: "house.fill")
         }
       
-      SettingsView()
+      SettingsViewNew()
         .tabItem {
           Label("Settings", systemImage: "gear")
         }
     }
-    .environmentObject(challengeManager)
   }
 }
 

@@ -4,12 +4,28 @@ An iOS app to help you break free from doomscrolling by requiring challenges to 
 
 ## Features
 
-- **Allowlist System**: Choose which apps you can access freely
-- **Challenge System**: Solve puzzles to access blocked apps
+- **Real iOS Screen Time Integration**: Uses Apple's Screen Time API to actually block apps at the system level
+- **App Blocking**: Choose which apps require challenges to access
+- **Challenge System**: Solve puzzles to temporarily unlock blocked apps
   - Math Challenge: Solve 5 random math problems
   - Tic-Tac-Toe: Win 1 game against the computer
-- **Onboarding Flow**: Easy setup with app selection
-- **Settings**: Manage your allowed apps list
+- **Temporary Unlock**: Complete a challenge to unlock all blocked apps for 5 minutes
+- **FamilyActivityPicker**: Use iOS's native app selector to choose apps
+- **Automatic Re-lock**: Apps automatically re-shield after the timeout
+- **Onboarding Flow**: Easy setup with Screen Time authorization and app selection
+- **Optional Contributions**: Support development with $5, $10, or $15 one-time contributions
+- **Always Free**: No ads, no subscriptions, completely free to use
+- **Settings**: Manage your blocked and allowed apps lists
+
+## How It Works
+
+1. **Block Apps**: Select distracting apps during onboarding
+2. **Try to Open**: When you try to open a blocked app, iOS shows a shield
+3. **Complete Challenge**: Open Look Up, Silly! and complete a challenge
+4. **Temporary Access**: All blocked apps unlock for 5 minutes
+5. **Auto Re-lock**: After 5 minutes, apps automatically shield again
+
+This uses Apple's **Screen Time API** for real system-level blocking that can't be bypassed.
 
 ## Setup
 
@@ -17,6 +33,7 @@ An iOS app to help you break free from doomscrolling by requiring challenges to 
 
 - Xcode 16+ (for iOS 26 support)
 - XcodeGen installed (`brew install xcodegen`)
+- Physical iOS device (Screen Time API doesn't work fully in simulator)
 
 ### Installation
 
@@ -103,7 +120,39 @@ class MyChallenge: Challenge {
 
 1. Open the project in Xcode
 2. Select your development team in Signing & Capabilities
-3. Build and run on simulator or device
+3. **Build and run on a physical device** (Screen Time API requires real device)
+4. Grant Screen Time permission when prompted
+5. Select apps to block during onboarding
+6. Test by trying to open a blocked app
+
+### Important Notes
+
+- **Screen Time API** requires a physical iOS device
+- The app needs "Screen Time" permission (requested on first launch)
+- Blocked apps will show an iOS system shield when opened
+- Must complete a challenge in Look Up, Silly! to unlock
+
+## Documentation
+
+- **[SCREEN_TIME_INTEGRATION.md](SCREEN_TIME_INTEGRATION.md)** - Detailed Screen Time API documentation
+- **[IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md)** - Implementation details and architecture
+- **[REVENUECAT_SETUP.md](REVENUECAT_SETUP.md)** - RevenueCat contribution setup guide
+- **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide
+
+## Requirements
+
+- iOS 26.0+
+- Xcode 16+
+- Physical iOS device for testing
+- Screen Time permission
+
+## Privacy
+
+- No data collection
+- No analytics
+- No network requests
+- All data stays on device
+- User has full control
 
 ## License
 

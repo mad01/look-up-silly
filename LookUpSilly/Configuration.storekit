@@ -1,0 +1,106 @@
+{
+  "identifier" : "49A98B53",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "6738754961",
+      "localizations" : [
+        {
+          "description" : "Buy us a coffee to support development",
+          "displayName" : "Small Contribution",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.lookupsilly.app.contribution.small",
+      "referenceName" : "Small Contribution",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "6738754962",
+      "localizations" : [
+        {
+          "description" : "Support continued development and new features",
+          "displayName" : "Medium Contribution",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.lookupsilly.app.contribution.medium",
+      "referenceName" : "Medium Contribution",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "14.99",
+      "familyShareable" : false,
+      "internalID" : "6738754963",
+      "localizations" : [
+        {
+          "description" : "Become a super supporter and help keep the app free",
+          "displayName" : "Large Contribution",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.lookupsilly.app.contribution.large",
+      "referenceName" : "Large Contribution",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
+
