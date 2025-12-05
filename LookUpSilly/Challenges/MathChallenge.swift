@@ -39,6 +39,7 @@ class MathChallenge: Challenge, ObservableObject {
     }
   }
   
+  @MainActor
   func view(onComplete: @escaping () -> Void) -> AnyView {
     AnyView(MathChallengeView(challenge: self, onComplete: onComplete))
   }

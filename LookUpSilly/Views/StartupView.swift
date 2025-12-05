@@ -9,12 +9,11 @@ struct StartupView: View {
       Color.black.ignoresSafeArea()
       
       VStack(spacing: 20) {
-        // App Icon
-        Image(systemName: "arrow.up.circle.fill")
+        // App Logo
+        Image("AppLogo")
           .resizable()
           .aspectRatio(contentMode: .fit)
           .frame(width: 120, height: 120)
-          .foregroundStyle(.blue.gradient)
           .scaleEffect(scale)
           .opacity(opacity)
         

@@ -1,5 +1,4 @@
 import SwiftUI
-import SpriteKit
 
 // MARK: - Tic-Tac-Toe Challenge
 // Challenge: Win 1 game of tic-tac-toe against the computer to unlock app access
@@ -10,6 +9,7 @@ class TicTacToeChallenge: Challenge, ObservableObject {
   @Published var gamesWon = 0
   let requiredWins = 1
   
+  @MainActor
   func view(onComplete: @escaping () -> Void) -> AnyView {
     AnyView(TicTacToeView(challenge: self, onComplete: onComplete))
   }
@@ -44,6 +44,7 @@ enum GameState {
 
 // MARK: - Tic-Tac-Toe Game Logic
 
+@MainActor
 class TicTacToeGame: ObservableObject {
   @Published var board: [Player] = Array(repeating: .none, count: 9)
   @Published var gameState: GameState = .playing
@@ -72,7 +73,8 @@ class TicTacToeGame: ObservableObject {
     
     // Computer's turn
     isComputerThinking = true
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+    Task { @MainActor in
+      try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
       self.computerMove()
       self.isComputerThinking = false
     }

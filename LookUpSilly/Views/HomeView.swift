@@ -14,9 +14,10 @@ struct HomeView: View {
           VStack(spacing: 30) {
             // Header
             VStack(spacing: 8) {
-              Image(systemName: "arrow.up.circle.fill")
-                .font(.system(size: 60))
-                .foregroundStyle(.blue.gradient)
+              Image("AppLogo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 80, height: 80)
               
               Text("Look Up, Silly!")
                 .font(.system(size: 32, weight: .bold, design: .rounded))

@@ -26,6 +26,6 @@ enum ChallengeType: String, CaseIterable {
 protocol Challenge {
   var type: ChallengeType { get }
   var isCompleted: Bool { get }
-  func view(onComplete: @escaping () -> Void) -> AnyView
+  @MainActor func view(onComplete: @escaping () -> Void) -> AnyView
 }
 

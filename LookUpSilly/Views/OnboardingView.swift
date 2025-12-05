@@ -31,11 +31,10 @@ struct OnboardingView: View {
     VStack(spacing: 30) {
       Spacer()
       
-      Image(systemName: "brain.head.profile")
+      Image("AppLogo")
         .resizable()
         .aspectRatio(contentMode: .fit)
         .frame(width: 100, height: 100)
-        .foregroundStyle(.blue.gradient)
       
       Text("Welcome to\nLook Up, Silly!")
         .font(.system(size: 36, weight: .bold, design: .rounded))
