@@ -1,0 +1,53 @@
+/* App Name */
+"app.name" = "Look Up, Silly!";
+"app.tagline" = "Break free from doomscrolling";
+
+/* Onboarding */
+"onboarding.welcome.title" = "Welcome to\nLook Up, Silly!";
+"onboarding.welcome.subtitle" = "Take control of your screen time and break the doomscrolling habit";
+"onboarding.welcome.button" = "Get Started";
+
+"onboarding.apps.title" = "Choose Allowed Apps";
+"onboarding.apps.subtitle" = "Select apps you can open freely.\nAll others will require a challenge.";
+"onboarding.apps.button" = "Continue";
+
+"onboarding.ready.title" = "You're All Set!";
+"onboarding.ready.feature1" = "Allowed apps open instantly";
+"onboarding.ready.feature2" = "Other apps require a challenge";
+"onboarding.ready.feature3" = "Break the doomscroll habit";
+"onboarding.ready.button" = "Start Using Look Up, Silly!";
+
+/* Home */
+"home.title" = "Look Up, Silly!";
+"home.subtitle" = "Stay focused, break the scroll";
+"home.allowed_apps" = "Allowed Apps";
+"home.challenge_required" = "Challenge Required";
+"home.no_allowed_apps" = "No allowed apps yet. Add some in Settings.";
+
+/* Settings */
+"settings.title" = "Settings";
+"settings.allowed_apps" = "Allowed Apps";
+"settings.reset" = "Reset Onboarding";
+
+/* Challenges */
+"challenge.math.title" = "Math Challenge";
+"challenge.math.subtitle" = "Solve 5 problems to continue";
+"challenge.math.problem" = "Problem %d of 5";
+"challenge.math.answer" = "Your answer";
+"challenge.math.submit" = "Submit";
+"challenge.math.incorrect" = "Incorrect! Try again";
+
+"challenge.tictactoe.title" = "Tic-Tac-Toe";
+"challenge.tictactoe.subtitle" = "Win 1 game to continue";
+"challenge.tictactoe.your_turn" = "Your turn";
+"challenge.tictactoe.you_won" = "You won! 🎉";
+"challenge.tictactoe.computer_won" = "Computer won. Try again!";
+"challenge.tictactoe.draw" = "It's a draw. Try again!";
+"challenge.tictactoe.thinking" = "Computer is thinking...";
+"challenge.tictactoe.play_again" = "Play Again";
+"challenge.tictactoe.complete" = "Complete!";
+
+/* Status */
+"status.allowed" = "Allowed";
+"status.challenge_required" = "Challenge Required";
+

@@ -1,0 +1,46 @@
+import SwiftUI
+
+struct StartupView: View {
+  @State private var scale: CGFloat = 0.8
+  @State private var opacity: Double = 0
+  
+  var body: some View {
+    ZStack {
+      Color.black.ignoresSafeArea()
+      
+      VStack(spacing: 20) {
+        // App Icon
+        Image(systemName: "arrow.up.circle.fill")
+          .resizable()
+          .aspectRatio(contentMode: .fit)
+          .frame(width: 120, height: 120)
+          .foregroundStyle(.blue.gradient)
+          .scaleEffect(scale)
+          .opacity(opacity)
+        
+        Text("Look Up, Silly!")
+          .font(.system(size: 32, weight: .bold, design: .rounded))
+          .foregroundColor(.white)
+          .opacity(opacity)
+        
+        Text("Break free from doomscrolling")
+          .font(.system(size: 16, weight: .regular))
+          .foregroundColor(.gray)
+          .opacity(opacity)
+          .multilineTextAlignment(.center)
+      }
+      .padding()
+    }
+    .onAppear {
+      withAnimation(.easeOut(duration: 0.6)) {
+        scale = 1.0
+        opacity = 1.0
+      }
+    }
+  }
+}
+
+#Preview {
+  StartupView()
+}
+
