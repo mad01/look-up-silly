@@ -49,6 +49,7 @@ class TicTacToeGame: ObservableObject {
   @Published var board: [Player] = Array(repeating: .none, count: 9)
   @Published var gameState: GameState = .playing
   @Published var isComputerThinking = false
+  @Published var selectedPieceIndex: Int? = nil
   
   let winPatterns = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
@@ -56,10 +57,36 @@ class TicTacToeGame: ObservableObject {
     [0, 4, 8], [2, 4, 6]             // Diagonals
   ]
   
+  let maxPieces = 3
+  
+  private func countPieces(for player: Player) -> Int {
+    return board.filter { $0 == player }.count
+  }
+  
   func makeMove(at index: Int) {
-    guard gameState == .playing, board[index] == .none else { return }
+    guard gameState == .playing else { return }
     
-    board[index] = .human
+    let humanPieceCount = countPieces(for: .human)
+    
+    // If we have 3 pieces, we need to move one
+    if humanPieceCount >= maxPieces {
+      if let selectedIndex = selectedPieceIndex {
+        // Moving selected piece to new position
+        guard board[index] == .none else { return }
+        board[selectedIndex] = .none
+        board[index] = .human
+        selectedPieceIndex = nil
+      } else {
+        // Selecting a piece to move
+        guard board[index] == .human else { return }
+        selectedPieceIndex = index
+        return // Don't trigger computer move yet
+      }
+    } else {
+      // Placing a new piece
+      guard board[index] == .none else { return }
+      board[index] = .human
+    }
     
     if checkWin(for: .human) {
       gameState = .humanWon
@@ -81,18 +108,18 @@ class TicTacToeGame: ObservableObject {
   }
   
   private func computerMove() {
-    // Simple AI: Try to win, then block, then take center, then random
-    if let winMove = findWinningMove(for: .computer) {
-      board[winMove] = .computer
-    } else if let blockMove = findWinningMove(for: .human) {
-      board[blockMove] = .computer
-    } else if board[4] == .none {
-      board[4] = .computer // Take center
+    let computerPieceCount = countPieces(for: .computer)
+    
+    if computerPieceCount >= maxPieces {
+      // Must move an existing piece
+      if let move = findBestMove(mustMove: true) {
+        board[move.from] = .none
+        board[move.to] = .computer
+      }
     } else {
-      // Take random available spot
-      let availableSpots = board.enumerated().filter { $0.element == .none }.map { $0.offset }
-      if let randomSpot = availableSpots.randomElement() {
-        board[randomSpot] = .computer
+      // Can place a new piece
+      if let move = findBestMove(mustMove: false) {
+        board[move.to] = .computer
       }
     }
     
@@ -101,6 +128,66 @@ class TicTacToeGame: ObservableObject {
     } else if isBoardFull() {
       gameState = .draw
     }
+  }
+  
+  private func findBestMove(mustMove: Bool) -> (from: Int, to: Int)? {
+    if mustMove {
+      // Try to win by moving a piece
+      if let winningMove = findWinningMoveByMoving(for: .computer) {
+        return winningMove
+      }
+      
+      // Try to block human from winning
+      if let blockMove = findWinningMoveByMoving(for: .human) {
+        // Find a computer piece to move to block
+        let computerPieces = board.enumerated().filter { $0.element == .computer }.map { $0.offset }
+        if let pieceToMove = computerPieces.randomElement() {
+          return (from: pieceToMove, to: blockMove)
+        }
+      }
+      
+      // Random move
+      let computerPieces = board.enumerated().filter { $0.element == .computer }.map { $0.offset }
+      let availableSpots = board.enumerated().filter { $0.element == .none }.map { $0.offset }
+      
+      if let from = computerPieces.randomElement(), let to = availableSpots.randomElement() {
+        return (from: from, to: to)
+      }
+      
+      return nil
+    } else {
+      // Placing a new piece (original logic)
+      let to: Int?
+      if let winMove = findWinningMove(for: .computer) {
+        to = winMove
+      } else if let blockMove = findWinningMove(for: .human) {
+        to = blockMove
+      } else if board[4] == .none {
+        to = 4 // Take center
+      } else {
+        let availableSpots = board.enumerated().filter { $0.element == .none }.map { $0.offset }
+        to = availableSpots.randomElement()
+      }
+      
+      if let targetSpot = to {
+        return (from: -1, to: targetSpot)
+      }
+      return nil
+    }
+  }
+  
+  private func findWinningMoveByMoving(for player: Player) -> Int? {
+    // Find if there's a winning position available
+    for pattern in winPatterns {
+      let values = pattern.map { board[$0] }
+      let playerCount = values.filter { $0 == player }.count
+      let emptyCount = values.filter { $0 == .none }.count
+      
+      if playerCount == 2 && emptyCount == 1 {
+        return pattern.first { board[$0] == .none }
+      }
+    }
+    return nil
   }
   
   private func findWinningMove(for player: Player) -> Int? {
@@ -133,6 +220,7 @@ class TicTacToeGame: ObservableObject {
     board = Array(repeating: .none, count: 9)
     gameState = .playing
     isComputerThinking = false
+    selectedPieceIndex = nil
   }
 }
 
@@ -171,6 +259,25 @@ struct TicTacToeView: View {
             .foregroundColor(game.gameState == .humanWon ? .green : 
                            game.gameState == .computerWon ? .red : .white)
           
+          if game.gameState == .playing {
+            let humanPieces = game.board.filter { $0 == .human }.count
+            if humanPieces >= game.maxPieces {
+              if game.selectedPieceIndex != nil {
+                Text("Now tap an empty space to move")
+                  .font(.subheadline)
+                  .foregroundColor(.blue)
+              } else {
+                Text("Select one of your pieces to move")
+                  .font(.subheadline)
+                  .foregroundColor(.orange)
+              }
+            } else {
+              Text("Place your piece (\(humanPieces)/\(game.maxPieces))")
+                .font(.subheadline)
+                .foregroundColor(.gray)
+            }
+          }
+          
           if game.isComputerThinking {
             Text("Computer is thinking...")
               .font(.subheadline)
@@ -184,10 +291,13 @@ struct TicTacToeView: View {
             HStack(spacing: 12) {
               ForEach(0..<3) { col in
                 let index = row * 3 + col
-                CellView(player: game.board[index])
-                  .onTapGesture {
-                    game.makeMove(at: index)
-                  }
+                CellView(
+                  player: game.board[index],
+                  isSelected: game.selectedPieceIndex == index
+                )
+                .onTapGesture {
+                  game.makeMove(at: index)
+                }
               }
             }
           }
@@ -232,12 +342,19 @@ struct TicTacToeView: View {
 
 struct CellView: View {
   let player: Player
+  let isSelected: Bool
   
   var body: some View {
     ZStack {
       RoundedRectangle(cornerRadius: 12)
         .fill(Color.white.opacity(0.1))
         .frame(width: 100, height: 100)
+      
+      if isSelected {
+        RoundedRectangle(cornerRadius: 12)
+          .stroke(Color.yellow, lineWidth: 3)
+          .frame(width: 100, height: 100)
+      }
       
       Text(player.symbol)
         .font(.system(size: 48, weight: .bold))
