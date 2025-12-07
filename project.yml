@@ -29,6 +29,14 @@ targets:
       - path: LookUpSilly/Configuration.storekit
     entitlements:
       path: LookUpSilly/LookUpSilly.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.developer.ubiquity-kvstore-identifier: $(AppIdentifierPrefix)$(CFBundleIdentifier)
+        com.apple.developer.icloud-container-identifiers:
+          - iCloud.$(CFBundleIdentifier)
+        com.apple.developer.icloud-services:
+          - CloudKit
+          - CloudDocuments
     dependencies:
       - package: RevenueCat
         product: RevenueCat
