@@ -90,21 +90,18 @@ struct PauseDurationSheet: View {
               // Extend options when paused
               CompactDurationButton(
                 minutes: 5,
-                icon: "plus.circle"
               ) {
                 extendPause(minutes: 5)
               }
               
               CompactDurationButton(
                 minutes: 10,
-                icon: "plus.circle"
               ) {
                 extendPause(minutes: 10)
               }
               
               CompactDurationButton(
                 minutes: 15,
-                icon: "plus.circle"
               ) {
                 extendPause(minutes: 15)
               }
@@ -112,21 +109,18 @@ struct PauseDurationSheet: View {
               // Initial duration options
               CompactDurationButton(
                 minutes: 5,
-                icon: "timer"
               ) {
                 pauseFor(minutes: 5)
               }
               
               CompactDurationButton(
                 minutes: 10,
-                icon: "clock"
               ) {
                 pauseFor(minutes: 10)
               }
               
               CompactDurationButton(
                 minutes: 15,
-                icon: "hourglass"
               ) {
                 pauseFor(minutes: 15)
               }
@@ -276,7 +270,7 @@ struct PauseDurationSheet: View {
     // Get current end time or use now if none
     let currentEndTime = pauseEndTime ?? Date()
     
-    // Add additional time
+    // Add additional e
     let newEndTime = currentEndTime.addingTimeInterval(additionalDuration)
     UserDefaults.standard.set(newEndTime, forKey: "pauseEndTime")
     
@@ -295,7 +289,6 @@ struct PauseDurationSheet: View {
 struct CompactDurationButton: View {
   @Environment(\.themeColors) private var colors
   let minutes: Int
-  let icon: String
   let action: () -> Void
   @State private var isPressed = false
   
@@ -311,10 +304,6 @@ struct CompactDurationButton: View {
       }
     }) {
       VStack(spacing: 8) {
-        Image(systemName: icon)
-          .font(.system(size: 28))
-          .foregroundColor(colors.primary)
-        
         Text("\(minutes)")
           .font(.system(size: 24, weight: .bold, design: .rounded))
           .foregroundColor(colors.textPrimary)
