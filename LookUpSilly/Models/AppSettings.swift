@@ -3,6 +3,7 @@ import SwiftUI
 class AppSettings: ObservableObject {
   @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding: Bool = false
   @AppStorage("allowedApps") private var allowedAppsData: Data = Data()
+  @AppStorage("challengesPaused") var challengesPaused: Bool = false
   
   @Published var allowedApps: Set<String> = []
   

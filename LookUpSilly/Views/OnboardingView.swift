@@ -1,13 +1,14 @@
 import SwiftUI
 
 struct OnboardingView: View {
+  @Environment(\.themeColors) private var colors
   @EnvironmentObject var appSettings: AppSettings
   @State private var selectedApps: Set<String> = []
   @State private var currentPage = 0
   
   var body: some View {
     ZStack {
-      Color.black.ignoresSafeArea()
+      colors.background.ignoresSafeArea()
       
       TabView(selection: $currentPage) {
         // Welcome page
@@ -39,12 +40,12 @@ struct OnboardingView: View {
       Text("Welcome to\nLook Up, Silly!")
         .font(.system(size: 36, weight: .bold, design: .rounded))
         .multilineTextAlignment(.center)
-        .foregroundColor(.white)
+        .foregroundColor(colors.textPrimary)
       
       Text("Take control of your screen time and break the doomscrolling habit")
         .font(.system(size: 18))
         .multilineTextAlignment(.center)
-        .foregroundColor(.gray)
+        .foregroundColor(colors.textSecondary)
         .padding(.horizontal, 40)
       
       Spacer()
@@ -52,10 +53,10 @@ struct OnboardingView: View {
       Button(action: { withAnimation { currentPage = 1 } }) {
         Text("Get Started")
           .font(.headline)
-          .foregroundColor(.white)
+          .foregroundColor(colors.textOnAccent)
           .frame(maxWidth: .infinity)
           .padding()
-          .background(Color.blue)
+          .background(colors.primary)
           .cornerRadius(12)
       }
       .padding(.horizontal, 40)
@@ -67,13 +68,13 @@ struct OnboardingView: View {
     VStack(spacing: 20) {
       Text("Choose Allowed Apps")
         .font(.system(size: 28, weight: .bold))
-        .foregroundColor(.white)
+        .foregroundColor(colors.textPrimary)
         .padding(.top, 60)
       
       Text("Select apps you can open freely.\nAll others will require a challenge.")
         .font(.system(size: 16))
         .multilineTextAlignment(.center)
-        .foregroundColor(.gray)
+        .foregroundColor(colors.textSecondary)
         .padding(.horizontal, 40)
       
       ScrollView {
@@ -99,10 +100,10 @@ struct OnboardingView: View {
       }) {
         Text("Continue")
           .font(.headline)
-          .foregroundColor(.white)
+          .foregroundColor(colors.textOnAccent)
           .frame(maxWidth: .infinity)
           .padding()
-          .background(selectedApps.isEmpty ? Color.gray : Color.blue)
+          .background(selectedApps.isEmpty ? colors.textDisabled : colors.primary)
           .cornerRadius(12)
       }
       .disabled(selectedApps.isEmpty)
@@ -123,7 +124,7 @@ struct OnboardingView: View {
       
       Text("You're All Set!")
         .font(.system(size: 36, weight: .bold, design: .rounded))
-        .foregroundColor(.white)
+        .foregroundColor(colors.textPrimary)
       
       VStack(alignment: .leading, spacing: 16) {
         FeatureRow(icon: "checkmark.shield", text: "Allowed apps open instantly")
@@ -141,10 +142,10 @@ struct OnboardingView: View {
       }) {
         Text("Start Using Look Up, Silly!")
           .font(.headline)
-          .foregroundColor(.white)
+          .foregroundColor(colors.textOnAccent)
           .frame(maxWidth: .infinity)
           .padding()
-          .background(Color.blue)
+          .background(colors.primary)
           .cornerRadius(12)
       }
       .padding(.horizontal, 40)
@@ -154,6 +155,7 @@ struct OnboardingView: View {
 }
 
 struct AppSelectionRow: View {
+  @Environment(\.themeColors) private var colors
   let app: InstalledApp
   let isSelected: Bool
   let onTap: () -> Void
@@ -163,27 +165,28 @@ struct AppSelectionRow: View {
       HStack {
         Image(systemName: app.icon)
           .font(.system(size: 24))
-          .foregroundColor(.blue)
+          .foregroundColor(colors.primary)
           .frame(width: 40)
         
         Text(app.name)
           .font(.system(size: 18))
-          .foregroundColor(.white)
+          .foregroundColor(colors.textPrimary)
         
         Spacer()
         
         Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-          .foregroundColor(isSelected ? .green : .gray)
+          .foregroundColor(isSelected ? colors.success : colors.textDisabled)
           .font(.system(size: 24))
       }
       .padding()
-      .background(Color.white.opacity(0.1))
+      .background(colors.surface)
       .cornerRadius(12)
     }
   }
 }
 
 struct FeatureRow: View {
+  @Environment(\.themeColors) private var colors
   let icon: String
   let text: String
   
@@ -191,12 +194,12 @@ struct FeatureRow: View {
     HStack(spacing: 16) {
       Image(systemName: icon)
         .font(.system(size: 24))
-        .foregroundColor(.blue)
+        .foregroundColor(colors.primary)
         .frame(width: 30)
       
       Text(text)
         .font(.system(size: 16))
-        .foregroundColor(.white)
+        .foregroundColor(colors.textPrimary)
     }
   }
 }

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ContributionView: View {
+  @Environment(\.themeColors) private var colors
   @StateObject private var revenueCat = RevenueCatManager.shared
   @State private var selectedProduct: RevenueCatManager.ContributionProduct?
   @State private var isProcessing = false
@@ -9,7 +10,7 @@ struct ContributionView: View {
   
   var body: some View {
     ZStack {
-      Color.black.ignoresSafeArea()
+      colors.background.ignoresSafeArea()
       
       if showThankYou {
         thankYouView
@@ -29,15 +30,15 @@ struct ContributionView: View {
           .resizable()
           .aspectRatio(contentMode: .fit)
           .frame(width: 80, height: 80)
-          .foregroundStyle(.pink.gradient)
+          .foregroundStyle(colors.premium.gradient)
         
         Text("Support Look Up, Silly!")
           .font(.system(size: 28, weight: .bold, design: .rounded))
-          .foregroundColor(.white)
+          .foregroundColor(colors.textPrimary)
         
         Text("Help us keep this app free forever")
           .font(.system(size: 16))
-          .foregroundColor(.gray)
+          .foregroundColor(colors.textSecondary)
           .multilineTextAlignment(.center)
       }
       
@@ -45,12 +46,12 @@ struct ContributionView: View {
       VStack(alignment: .leading, spacing: 12) {
         Text("To keep this app free and ad-free, we rely on generous contributions from users like you.")
           .font(.subheadline)
-          .foregroundColor(.white)
+          .foregroundColor(colors.textPrimary)
           .multilineTextAlignment(.center)
         
         Text("Your contribution helps us:")
           .font(.subheadline.bold())
-          .foregroundColor(.white)
+          .foregroundColor(colors.textPrimary)
         
         ContributionBenefitRow(icon: "hammer", text: "Continue development")
         ContributionBenefitRow(icon: "sparkles", text: "Add new features")
@@ -78,7 +79,7 @@ struct ContributionView: View {
       if let error = revenueCat.errorMessage {
         Text(error)
           .font(.caption)
-          .foregroundColor(.red)
+          .foregroundColor(colors.error)
           .multilineTextAlignment(.center)
           .padding(.horizontal, 40)
       }
@@ -91,14 +92,14 @@ struct ContributionView: View {
       }) {
         Text("Maybe Later")
           .font(.subheadline)
-          .foregroundColor(.gray)
+          .foregroundColor(colors.textSecondary)
       }
       .disabled(isProcessing)
       .padding(.bottom, 20)
       
       Text("100% optional • One-time payment")
         .font(.caption)
-        .foregroundColor(.gray)
+        .foregroundColor(colors.textSecondary)
         .padding(.bottom, 40)
     }
   }
@@ -115,11 +116,11 @@ struct ContributionView: View {
       
       Text("Thank You! 🎉")
         .font(.system(size: 36, weight: .bold, design: .rounded))
-        .foregroundColor(.white)
+        .foregroundColor(colors.textPrimary)
       
       Text("Your contribution helps keep\nLook Up, Silly! free for everyone")
         .font(.system(size: 16))
-        .foregroundColor(.gray)
+        .foregroundColor(colors.textSecondary)
         .multilineTextAlignment(.center)
         .padding(.horizontal, 40)
       
@@ -130,10 +131,10 @@ struct ContributionView: View {
       }) {
         Text("Continue")
           .font(.headline)
-          .foregroundColor(.white)
+          .foregroundColor(colors.textOnAccent)
           .frame(maxWidth: .infinity)
           .padding()
-          .background(Color.blue)
+          .background(colors.primary)
           .cornerRadius(12)
       }
       .padding(.horizontal, 40)
@@ -155,6 +156,7 @@ struct ContributionView: View {
 }
 
 struct ContributionOptionButton: View {
+  @Environment(\.themeColors) private var colors
   let product: RevenueCatManager.ContributionProduct
   let isSelected: Bool
   let isProcessing: Bool
@@ -166,30 +168,30 @@ struct ContributionOptionButton: View {
         VStack(alignment: .leading, spacing: 4) {
           Text(product.displayAmount)
             .font(.title2.bold())
-            .foregroundColor(.white)
+            .foregroundColor(colors.textPrimary)
           
           Text(product.description)
             .font(.caption)
-            .foregroundColor(.gray)
+            .foregroundColor(colors.textSecondary)
         }
         
         Spacer()
         
         if isProcessing && isSelected {
           ProgressView()
-            .tint(.white)
+            .tint(colors.primary)
         } else {
           Image(systemName: "arrow.right.circle.fill")
             .font(.title2)
-            .foregroundColor(.white)
+            .foregroundColor(colors.primary)
         }
       }
       .padding()
-      .background(isSelected && isProcessing ? Color.blue.opacity(0.5) : Color.blue.opacity(0.2))
+      .background(isSelected && isProcessing ? colors.primary.opacity(0.3) : colors.primary.opacity(0.15))
       .cornerRadius(12)
       .overlay(
         RoundedRectangle(cornerRadius: 12)
-          .stroke(Color.blue, lineWidth: 2)
+          .stroke(colors.primary, lineWidth: 2)
       )
     }
     .disabled(isProcessing)
@@ -197,6 +199,7 @@ struct ContributionOptionButton: View {
 }
 
 struct ContributionBenefitRow: View {
+  @Environment(\.themeColors) private var colors
   let icon: String
   let text: String
   
@@ -204,12 +207,12 @@ struct ContributionBenefitRow: View {
     HStack(spacing: 12) {
       Image(systemName: icon)
         .font(.system(size: 16))
-        .foregroundColor(.blue)
+        .foregroundColor(colors.primary)
         .frame(width: 24)
       
       Text(text)
         .font(.subheadline)
-        .foregroundColor(.white)
+        .foregroundColor(colors.textPrimary)
     }
   }
 }

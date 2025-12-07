@@ -2,6 +2,7 @@ import SwiftUI
 import FamilyControls
 
 struct OnboardingViewNew: View {
+  @Environment(\.themeColors) private var colors
   @EnvironmentObject var appSettings: AppSettings
   @StateObject private var screenTimeManager = ScreenTimeManager.shared
   @State private var currentPage = 0
@@ -9,7 +10,7 @@ struct OnboardingViewNew: View {
   
   var body: some View {
     ZStack {
-      Color.black.ignoresSafeArea()
+      colors.background.ignoresSafeArea()
       
       if !hasScreenTimeAuth {
         ScreenTimeAuthView(onAuthorized: {
@@ -51,12 +52,12 @@ struct OnboardingViewNew: View {
       Text("Welcome to\nLook Up, Silly!")
         .font(.system(size: 36, weight: .bold, design: .rounded))
         .multilineTextAlignment(.center)
-        .foregroundColor(.white)
+        .foregroundColor(colors.textPrimary)
       
       Text("Take control of your screen time and break the doomscrolling habit")
         .font(.system(size: 18))
         .multilineTextAlignment(.center)
-        .foregroundColor(.gray)
+        .foregroundColor(colors.textSecondary)
         .padding(.horizontal, 40)
       
       Spacer()
@@ -64,10 +65,10 @@ struct OnboardingViewNew: View {
       Button(action: { withAnimation { currentPage = 1 } }) {
         Text("Get Started")
           .font(.headline)
-          .foregroundColor(.white)
+          .foregroundColor(colors.textOnAccent)
           .frame(maxWidth: .infinity)
           .padding()
-          .background(Color.blue)
+          .background(colors.primary)
           .cornerRadius(12)
       }
       .padding(.horizontal, 40)
@@ -87,13 +88,13 @@ struct OnboardingViewNew: View {
         VStack(spacing: 12) {
           Text("Choose Apps to Block")
             .font(.system(size: 28, weight: .bold))
-            .foregroundColor(.white)
+            .foregroundColor(colors.textPrimary)
             .padding(.top, 60)
           
           Text("Select apps that distract you.\nYou'll need to complete a challenge to open them.")
             .font(.system(size: 16))
             .multilineTextAlignment(.center)
-            .foregroundColor(.gray)
+            .foregroundColor(colors.textSecondary)
             .padding(.horizontal, 40)
         }
         
@@ -105,7 +106,7 @@ struct OnboardingViewNew: View {
         .padding(.horizontal, 20)
         
         Divider()
-          .background(Color.gray)
+          .background(colors.divider)
           .padding(.horizontal, 40)
           .padding(.vertical, 20)
         
@@ -122,10 +123,10 @@ struct OnboardingViewNew: View {
         }) {
           Text("Continue")
             .font(.headline)
-            .foregroundColor(.white)
+            .foregroundColor(colors.textOnAccent)
             .frame(maxWidth: .infinity)
             .padding()
-            .background(!screenTimeManager.blockedApps.applicationTokens.isEmpty ? Color.blue : Color.gray)
+            .background(!screenTimeManager.blockedApps.applicationTokens.isEmpty ? colors.primary : colors.textDisabled)
             .cornerRadius(12)
         }
         .disabled(screenTimeManager.blockedApps.applicationTokens.isEmpty)
@@ -147,7 +148,7 @@ struct OnboardingViewNew: View {
       
       Text("You're All Set!")
         .font(.system(size: 36, weight: .bold, design: .rounded))
-        .foregroundColor(.white)
+        .foregroundColor(colors.textPrimary)
       
       VStack(alignment: .leading, spacing: 16) {
         FeatureRowNew(icon: "shield.fill", text: "Blocked apps are now protected")
@@ -163,10 +164,10 @@ struct OnboardingViewNew: View {
       }) {
         Text("Start Using Look Up, Silly!")
           .font(.headline)
-          .foregroundColor(.white)
+          .foregroundColor(colors.textOnAccent)
           .frame(maxWidth: .infinity)
           .padding()
-          .background(Color.blue)
+          .background(colors.primary)
           .cornerRadius(12)
       }
       .padding(.horizontal, 40)
@@ -176,6 +177,7 @@ struct OnboardingViewNew: View {
 }
 
 struct FeatureRowNew: View {
+  @Environment(\.themeColors) private var colors
   let icon: String
   let text: String
   
@@ -183,12 +185,12 @@ struct FeatureRowNew: View {
     HStack(spacing: 16) {
       Image(systemName: icon)
         .font(.system(size: 24))
-        .foregroundColor(.blue)
+        .foregroundColor(colors.primary)
         .frame(width: 30)
       
       Text(text)
         .font(.system(size: 16))
-        .foregroundColor(.white)
+        .foregroundColor(colors.textPrimary)
     }
   }
 }

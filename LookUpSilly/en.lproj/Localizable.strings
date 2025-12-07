@@ -28,6 +28,9 @@
 "settings.title" = "Settings";
 "settings.allowed_apps" = "Allowed Apps";
 "settings.reset" = "Reset Onboarding";
+"settings.pause_challenges" = "Pause Challenges";
+"settings.challenges_paused" = "Challenges are paused";
+"settings.challenges_active" = "Challenges are active";
 
 /* Challenges */
 "challenge.math.title" = "Math Challenge";
@@ -50,4 +53,7 @@
 /* Status */
 "status.allowed" = "Allowed";
 "status.challenge_required" = "Challenge Required";
+
+/* App Shortcuts */
+"shortcut.pause_challenges" = "Pause challenges instead of deleting Look Up, Silly!";
 

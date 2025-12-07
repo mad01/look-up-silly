@@ -1,12 +1,13 @@
 import SwiftUI
 
 struct SettingsView: View {
+  @Environment(\.themeColors) private var colors
   @EnvironmentObject var appSettings: AppSettings
   
   var body: some View {
     NavigationStack {
       ZStack {
-        Color.black.ignoresSafeArea()
+        colors.background.ignoresSafeArea()
         
         List {
           Section {
@@ -14,11 +15,11 @@ struct SettingsView: View {
               HStack {
                 Image(systemName: app.icon)
                   .font(.system(size: 24))
-                  .foregroundColor(.blue)
+                  .foregroundColor(colors.primary)
                   .frame(width: 40)
                 
                 Text(app.name)
-                  .foregroundColor(.white)
+                  .foregroundColor(colors.textPrimary)
                 
                 Spacer()
                 
@@ -36,9 +37,29 @@ struct SettingsView: View {
             }
           } header: {
             Text("Allowed Apps")
-              .foregroundColor(.white)
+              .foregroundColor(colors.textPrimary)
           }
-          .listRowBackground(Color.white.opacity(0.1))
+          .listRowBackground(colors.surface)
+          
+          Section {
+            Toggle(isOn: $appSettings.challengesPaused) {
+              VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                  Image(systemName: "pause.circle.fill")
+                    .foregroundColor(colors.primary)
+                  Text("Pause Challenges")
+                    .foregroundColor(colors.textPrimary)
+                }
+                Text(appSettings.challengesPaused ? "Challenges are paused - all apps open freely" : "Challenges are active")
+                  .font(.caption)
+                  .foregroundColor(colors.textSecondary)
+              }
+            }
+          } header: {
+            Text("Challenge Status")
+              .foregroundColor(colors.textPrimary)
+          }
+          .listRowBackground(colors.surface)
           
           Section {
             Button(action: {
@@ -48,13 +69,13 @@ struct SettingsView: View {
             }) {
               HStack {
                 Image(systemName: "arrow.counterclockwise")
-                  .foregroundColor(.red)
+                  .foregroundColor(colors.danger)
                 Text("Reset Onboarding")
-                  .foregroundColor(.red)
+                  .foregroundColor(colors.danger)
               }
             }
           }
-          .listRowBackground(Color.white.opacity(0.1))
+          .listRowBackground(colors.surface)
         }
         .scrollContentBackground(.hidden)
       }

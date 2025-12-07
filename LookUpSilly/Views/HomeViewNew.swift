@@ -2,6 +2,7 @@ import SwiftUI
 import FamilyControls
 
 struct HomeViewNew: View {
+  @Environment(\.themeColors) private var colors
   @EnvironmentObject var appSettings: AppSettings
   @StateObject private var screenTimeManager = ScreenTimeManager.shared
   @StateObject private var challengeManager = ChallengeManager()
@@ -12,7 +13,7 @@ struct HomeViewNew: View {
   var body: some View {
     NavigationStack {
       ZStack {
-        Color.black.ignoresSafeArea()
+        colors.background.ignoresSafeArea()
         
         ScrollView {
           VStack(spacing: 30) {
@@ -25,35 +26,35 @@ struct HomeViewNew: View {
               
               Text("Look Up, Silly!")
                 .font(.system(size: 32, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
+                .foregroundColor(colors.textPrimary)
               
               // Prominent Stats Counter
               VStack(spacing: 8) {
                 HStack(spacing: 4) {
                   Image(systemName: "checkmark.shield.fill")
                     .font(.title2)
-                    .foregroundColor(.green)
+                    .foregroundColor(colors.success)
                   
                   Text("\(statsManager.totalChallengesCompleted)")
                     .font(.system(size: 36, weight: .bold, design: .rounded))
-                    .foregroundColor(.green)
+                    .foregroundColor(colors.success)
                     .contentTransition(.numericText())
                   
                   Text("Times Saved")
                     .font(.title3.bold())
-                    .foregroundColor(.white)
+                    .foregroundColor(colors.textPrimary)
                 }
                 
                 Text("Challenges completed to stay focused")
                   .font(.caption)
-                  .foregroundColor(.gray)
+                  .foregroundColor(colors.textSecondary)
               }
               .padding()
-              .background(Color.green.opacity(0.1))
+              .background(colors.success.opacity(0.15))
               .cornerRadius(12)
               .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                  .stroke(Color.green.opacity(0.3), lineWidth: 1)
+                  .stroke(colors.success.opacity(0.3), lineWidth: 1)
               )
             }
             .padding(.top, 40)
@@ -65,55 +66,89 @@ struct HomeViewNew: View {
               allowedCount: screenTimeManager.allowedApps.applicationTokens.count
             )
             
-            // Quick Unlock Section
-            VStack(alignment: .leading, spacing: 16) {
-              Text("Need Access?")
-                .font(.title2.bold())
-                .foregroundColor(.white)
-                .padding(.horizontal, 20)
-              
-              Text("Complete a challenge to temporarily unlock blocked apps for 5 minutes")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-                .padding(.horizontal, 20)
-              
-              Button(action: {
-                startChallenge()
-              }) {
+            // Quick Unlock Section or Paused Status
+            if appSettings.challengesPaused {
+              VStack(alignment: .leading, spacing: 16) {
+                Text("Challenges Paused")
+                  .font(.title2.bold())
+                  .foregroundColor(colors.textPrimary)
+                  .padding(.horizontal, 20)
+                
                 HStack {
-                  Image(systemName: "puzzlepiece.fill")
-                    .font(.title2)
+                  Image(systemName: "pause.circle.fill")
+                    .font(.title)
+                    .foregroundColor(colors.warning)
                   
                   VStack(alignment: .leading, spacing: 4) {
-                    Text("Start Challenge")
+                    Text("All apps are accessible")
                       .font(.headline)
-                    Text("Unlock all blocked apps temporarily")
+                      .foregroundColor(colors.textPrimary)
+                    Text("Go to Settings to resume challenges")
                       .font(.caption)
-                      .foregroundColor(.gray)
+                      .foregroundColor(colors.textSecondary)
                   }
                   
                   Spacer()
-                  
-                  Image(systemName: "chevron.right")
-                    .foregroundColor(.gray)
                 }
-                .foregroundColor(.white)
                 .padding()
-                .background(Color.blue.opacity(0.2))
+                .background(colors.warning.opacity(0.2))
                 .cornerRadius(12)
                 .overlay(
                   RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.blue, lineWidth: 2)
+                    .stroke(colors.warning, lineWidth: 2)
                 )
+                .padding(.horizontal, 20)
               }
-              .padding(.horizontal, 20)
+            } else {
+              VStack(alignment: .leading, spacing: 16) {
+                Text("Need Access?")
+                  .font(.title2.bold())
+                  .foregroundColor(colors.textPrimary)
+                  .padding(.horizontal, 20)
+                
+                Text("Complete a challenge to temporarily unlock blocked apps for 5 minutes")
+                  .font(.subheadline)
+                  .foregroundColor(colors.textSecondary)
+                  .padding(.horizontal, 20)
+                
+                Button(action: {
+                  startChallenge()
+                }) {
+                  HStack {
+                    Image(systemName: "puzzlepiece.fill")
+                      .font(.title2)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                      Text("Start Challenge")
+                        .font(.headline)
+                      Text("Unlock all blocked apps temporarily")
+                        .font(.caption)
+                        .foregroundColor(colors.textSecondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                      .foregroundColor(colors.textSecondary)
+                  }
+                  .foregroundColor(colors.textPrimary)
+                  .padding()
+                  .background(colors.primary.opacity(0.2))
+                  .cornerRadius(12)
+                  .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                      .stroke(colors.primary, lineWidth: 2)
+                  )
+                }
+                .padding(.horizontal, 20)
+              }
             }
             
             // Play for Fun Section
             VStack(alignment: .leading, spacing: 16) {
               Text("Practice")
                 .font(.title2.bold())
-                .foregroundColor(.white)
+                .foregroundColor(colors.textPrimary)
                 .padding(.horizontal, 20)
               
               Button(action: {
@@ -128,21 +163,21 @@ struct HomeViewNew: View {
                       .font(.headline)
                     Text("Practice anytime, no unlock needed")
                       .font(.caption)
-                      .foregroundColor(.gray)
+                      .foregroundColor(colors.textSecondary)
                   }
                   
                   Spacer()
                   
                   Image(systemName: "chevron.right")
-                    .foregroundColor(.gray)
+                    .foregroundColor(colors.textSecondary)
                 }
-                .foregroundColor(.white)
+                .foregroundColor(colors.textPrimary)
                 .padding()
-                .background(Color.purple.opacity(0.2))
+                .background(colors.secondary.opacity(0.2))
                 .cornerRadius(12)
                 .overlay(
                   RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.purple, lineWidth: 2)
+                    .stroke(colors.secondary, lineWidth: 2)
                 )
               }
               .padding(.horizontal, 20)
@@ -152,7 +187,7 @@ struct HomeViewNew: View {
             VStack(alignment: .leading, spacing: 16) {
               Text("Your Progress")
                 .font(.title2.bold())
-                .foregroundColor(.white)
+                .foregroundColor(colors.textPrimary)
                 .padding(.horizontal, 20)
               
               VStack(spacing: 12) {
@@ -161,14 +196,14 @@ struct HomeViewNew: View {
                     icon: "function",
                     title: "Math",
                     value: "\(statsManager.mathChallengesCompleted)",
-                    color: .orange
+                    color: colors.mathChallenge
                   )
                   
                   StatCard(
                     icon: "square.grid.3x3.fill",
                     title: "Tic-Tac-Toe",
                     value: "\(statsManager.ticTacToeChallengesCompleted)",
-                    color: .purple
+                    color: colors.ticTacToe
                   )
                 }
                 
@@ -177,7 +212,7 @@ struct HomeViewNew: View {
                     icon: "shield.checkered",
                     title: "Apps Blocked",
                     value: "\(screenTimeManager.blockedApps.applicationTokens.count)",
-                    color: .blue
+                    color: colors.appSelection
                   )
                   
                   if let lastSync = statsManager.lastSyncDate {
@@ -185,14 +220,14 @@ struct HomeViewNew: View {
                       icon: "icloud.fill",
                       title: "Last Sync",
                       value: timeAgo(lastSync),
-                      color: .green
+                      color: colors.success
                     )
                   } else {
                     StatCard(
                       icon: "icloud.slash",
                       title: "Sync Status",
                       value: "Local",
-                      color: .gray
+                      color: colors.textDisabled
                     )
                   }
                 }
@@ -253,6 +288,7 @@ struct HomeViewNew: View {
 }
 
 struct StatusCard: View {
+  @Environment(\.themeColors) private var colors
   let blockedCount: Int
   let allowedCount: Int
   
@@ -262,31 +298,32 @@ struct StatusCard: View {
         VStack(alignment: .leading) {
           Text("Protection Active")
             .font(.headline)
-            .foregroundColor(.white)
+            .foregroundColor(colors.textPrimary)
           Text("\(blockedCount) apps blocked")
             .font(.caption)
-            .foregroundColor(.gray)
+            .foregroundColor(colors.textSecondary)
         }
         
         Spacer()
         
         Image(systemName: "shield.checkered")
           .font(.system(size: 40))
-          .foregroundStyle(.green.gradient)
+          .foregroundStyle(colors.success.gradient)
       }
     }
     .padding()
-    .background(Color.green.opacity(0.1))
+    .background(colors.success.opacity(0.15))
     .cornerRadius(12)
     .overlay(
       RoundedRectangle(cornerRadius: 12)
-        .stroke(Color.green.opacity(0.3), lineWidth: 1)
+        .stroke(colors.success.opacity(0.3), lineWidth: 1)
     )
     .padding(.horizontal, 20)
   }
 }
 
 struct StatCard: View {
+  @Environment(\.themeColors) private var colors
   let icon: String
   let title: String
   let value: String
@@ -300,15 +337,15 @@ struct StatCard: View {
       
       Text(value)
         .font(.system(size: 24, weight: .bold))
-        .foregroundColor(.white)
+        .foregroundColor(colors.textPrimary)
       
       Text(title)
         .font(.caption)
-        .foregroundColor(.gray)
+        .foregroundColor(colors.textSecondary)
     }
     .frame(maxWidth: .infinity)
     .padding()
-    .background(Color.white.opacity(0.05))
+    .background(colors.surface)
     .cornerRadius(12)
   }
 }

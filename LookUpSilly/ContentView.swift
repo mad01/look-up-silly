@@ -1,13 +1,18 @@
 import SwiftUI
 
 struct ContentView: View {
+  @Environment(\.themeColors) private var colors
   @EnvironmentObject var appSettings: AppSettings
   
   var body: some View {
-    if !appSettings.hasCompletedOnboarding {
-      OnboardingViewNew()
-    } else {
-      MainTabView()
+    ZStack {
+      colors.background.ignoresSafeArea()
+      
+      if !appSettings.hasCompletedOnboarding {
+        OnboardingViewNew()
+      } else {
+        MainTabView()
+      }
     }
   }
 }

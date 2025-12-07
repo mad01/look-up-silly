@@ -2,6 +2,7 @@ import SwiftUI
 import FamilyControls
 
 struct SettingsViewNew: View {
+  @Environment(\.themeColors) private var colors
   @EnvironmentObject var appSettings: AppSettings
   @StateObject private var screenTimeManager = ScreenTimeManager.shared
   @StateObject private var revenueCat = RevenueCatManager.shared
@@ -14,7 +15,7 @@ struct SettingsViewNew: View {
   var body: some View {
     NavigationStack {
       ZStack {
-        Color.black.ignoresSafeArea()
+        colors.background.ignoresSafeArea()
         
         List {
           Section {
@@ -28,12 +29,12 @@ struct SettingsViewNew: View {
             }
           } header: {
             Text("App Management")
-              .foregroundColor(.white)
+              .foregroundColor(colors.textPrimary)
           } footer: {
             Text("Tip: Use the search bar in the app picker to quickly find your installed apps. Empty categories can be ignored.")
-              .foregroundColor(.gray)
+              .foregroundColor(colors.textSecondary)
           }
-          .listRowBackground(Color.white.opacity(0.1))
+          .listRowBackground(colors.surface)
           
           Section {
             FamilyActivityPickerView(
@@ -46,29 +47,62 @@ struct SettingsViewNew: View {
             }
           } header: {
             Text("Exceptions")
-              .foregroundColor(.white)
+              .foregroundColor(colors.textPrimary)
           } footer: {
             Text("These apps will bypass the challenge requirement")
-              .foregroundColor(.gray)
+              .foregroundColor(colors.textSecondary)
           }
-          .listRowBackground(Color.white.opacity(0.1))
+          .listRowBackground(colors.surface)
+          
+          Section {
+            Toggle(isOn: $appSettings.challengesPaused) {
+              HStack {
+                Image(systemName: "pause.circle.fill")
+                  .foregroundColor(appSettings.challengesPaused ? colors.warning : colors.primary)
+                  .font(.system(size: 24))
+                VStack(alignment: .leading, spacing: 4) {
+                  Text("Pause Challenges")
+                    .foregroundColor(colors.textPrimary)
+                    .font(.headline)
+                  Text(appSettings.challengesPaused ? "All apps open freely - challenges paused" : "Challenges are active")
+                    .font(.caption)
+                    .foregroundColor(colors.textSecondary)
+                }
+              }
+            }
+            .onChange(of: appSettings.challengesPaused) { _, isPaused in
+              handlePauseStateChange(isPaused)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ChallengesPausedStateChanged"))) { _ in
+              // Update shields when state changes from quick action
+              let isPaused = UserDefaults.standard.bool(forKey: "challengesPaused")
+              handlePauseStateChange(isPaused)
+            }
+          } header: {
+            Text("Challenge Status")
+              .foregroundColor(colors.textPrimary)
+          } footer: {
+            Text("Temporarily pause all challenges without removing your blocked apps list")
+              .foregroundColor(colors.textSecondary)
+          }
+          .listRowBackground(colors.surface)
           
           Section {
             if revenueCat.hasContributed {
               HStack {
                 Image(systemName: "heart.circle.fill")
-                  .foregroundColor(.pink)
+                  .foregroundColor(colors.premium)
                 VStack(alignment: .leading, spacing: 4) {
                   Text("Thank You!")
-                    .foregroundColor(.white)
+                    .foregroundColor(colors.textPrimary)
                     .font(.headline)
                   Text("You've contributed \(revenueCat.contributionAmount ?? "to development")")
-                    .foregroundColor(.gray)
+                    .foregroundColor(colors.textSecondary)
                     .font(.caption)
                 }
                 Spacer()
                 Image(systemName: "checkmark.circle.fill")
-                  .foregroundColor(.green)
+                  .foregroundColor(colors.success)
               }
             } else {
               Button(action: {
@@ -76,36 +110,36 @@ struct SettingsViewNew: View {
               }) {
                 HStack {
                   Image(systemName: "heart.circle")
-                    .foregroundColor(.pink)
+                    .foregroundColor(colors.premium)
                   VStack(alignment: .leading, spacing: 4) {
                     Text("Support Development")
-                      .foregroundColor(.white)
+                      .foregroundColor(colors.textPrimary)
                     Text("Help keep this app free")
-                      .foregroundColor(.gray)
+                      .foregroundColor(colors.textSecondary)
                       .font(.caption)
                   }
                   Spacer()
                   Image(systemName: "chevron.right")
-                    .foregroundColor(.gray)
+                    .foregroundColor(colors.textSecondary)
                 }
               }
             }
           } header: {
             Text("Contribution")
-              .foregroundColor(.white)
+              .foregroundColor(colors.textPrimary)
           } footer: {
             Text("Look Up, Silly! is free with no ads. Your contribution helps us continue development.")
-              .foregroundColor(.gray)
+              .foregroundColor(colors.textSecondary)
           }
-          .listRowBackground(Color.white.opacity(0.1))
+          .listRowBackground(colors.surface)
           
           Section {
             VStack(alignment: .leading, spacing: 12) {
               HStack {
                 Image(systemName: "info.circle")
-                  .foregroundColor(.blue)
+                  .foregroundColor(colors.info)
                 Text("How It Works")
-                  .foregroundColor(.white)
+                  .foregroundColor(colors.textPrimary)
                   .font(.headline)
               }
               
@@ -127,73 +161,73 @@ struct SettingsViewNew: View {
                   text: "After 5 minutes, protection reactivates"
                 )
               }
-              .foregroundColor(.gray)
+              .foregroundColor(colors.textSecondary)
               .font(.caption)
             }
           }
-          .listRowBackground(Color.white.opacity(0.1))
+          .listRowBackground(colors.surface)
           
           Section {
             // Stats Display
             VStack(alignment: .leading, spacing: 12) {
               HStack {
                 Image(systemName: "chart.bar.fill")
-                  .foregroundColor(.green)
+                  .foregroundColor(colors.success)
                 Text("Total Challenges Completed")
-                  .foregroundColor(.white)
+                  .foregroundColor(colors.textPrimary)
                 Spacer()
                 Text("\(statsManager.totalChallengesCompleted)")
                   .font(.title2.bold())
-                  .foregroundColor(.green)
+                  .foregroundColor(colors.success)
               }
               
               Divider()
-                .background(Color.gray)
+                .background(colors.divider)
               
               HStack {
                 Image(systemName: "function")
-                  .foregroundColor(.orange)
+                  .foregroundColor(colors.mathChallenge)
                 Text("Math Challenges")
-                  .foregroundColor(.gray)
+                  .foregroundColor(colors.textSecondary)
                 Spacer()
                 Text("\(statsManager.mathChallengesCompleted)")
-                  .foregroundColor(.white)
+                  .foregroundColor(colors.textPrimary)
               }
               
               HStack {
                 Image(systemName: "square.grid.3x3.fill")
-                  .foregroundColor(.purple)
+                  .foregroundColor(colors.ticTacToe)
                 Text("Tic-Tac-Toe")
-                  .foregroundColor(.gray)
+                  .foregroundColor(colors.textSecondary)
                 Spacer()
                 Text("\(statsManager.ticTacToeChallengesCompleted)")
-                  .foregroundColor(.white)
+                  .foregroundColor(colors.textPrimary)
               }
               
               if let lastSync = statsManager.lastSyncDate {
                 Divider()
-                  .background(Color.gray)
+                  .background(colors.divider)
                 
                 HStack {
                   Image(systemName: "icloud.fill")
-                    .foregroundColor(.blue)
+                    .foregroundColor(colors.info)
                   Text("Last iCloud Sync")
-                    .foregroundColor(.gray)
+                    .foregroundColor(colors.textSecondary)
                   Spacer()
                   Text(lastSync, style: .relative)
-                    .foregroundColor(.white)
+                    .foregroundColor(colors.textPrimary)
                     .font(.caption)
                 }
               }
             }
           } header: {
             Text("Statistics")
-              .foregroundColor(.white)
+              .foregroundColor(colors.textPrimary)
           } footer: {
             Text("Your challenge completion stats sync across all your devices via iCloud")
-              .foregroundColor(.gray)
+              .foregroundColor(colors.textSecondary)
           }
-          .listRowBackground(Color.white.opacity(0.1))
+          .listRowBackground(colors.surface)
           
           Section {
             #if DEBUG
@@ -202,17 +236,17 @@ struct SettingsViewNew: View {
             }) {
               HStack {
                 Image(systemName: "hammer.circle")
-                  .foregroundColor(.purple)
+                  .foregroundColor(colors.secondary)
                 VStack(alignment: .leading, spacing: 4) {
                   Text("Test Challenges")
-                    .foregroundColor(.white)
+                    .foregroundColor(colors.textPrimary)
                   Text("Development")
                     .font(.caption)
-                    .foregroundColor(.gray)
+                    .foregroundColor(colors.textSecondary)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                  .foregroundColor(.gray)
+                  .foregroundColor(colors.textSecondary)
               }
             }
             
@@ -221,17 +255,17 @@ struct SettingsViewNew: View {
             }) {
               HStack {
                 Image(systemName: "chart.bar.xaxis")
-                  .foregroundColor(.orange)
+                  .foregroundColor(colors.warning)
                 VStack(alignment: .leading, spacing: 4) {
                   Text("Reset Statistics")
-                    .foregroundColor(.white)
+                    .foregroundColor(colors.textPrimary)
                   Text("Development")
                     .font(.caption)
-                    .foregroundColor(.gray)
+                    .foregroundColor(colors.textSecondary)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                  .foregroundColor(.gray)
+                  .foregroundColor(colors.textSecondary)
               }
             }
             #endif
@@ -241,17 +275,17 @@ struct SettingsViewNew: View {
             }) {
               HStack {
                 Image(systemName: "shield.slash")
-                  .foregroundColor(.orange)
+                  .foregroundColor(colors.warning)
                 VStack(alignment: .leading, spacing: 4) {
                   Text("Temporarily Disable All Shields")
-                    .foregroundColor(.white)
+                    .foregroundColor(colors.textPrimary)
                   Text("Removes shields until next app launch")
                     .font(.caption)
-                    .foregroundColor(.gray)
+                    .foregroundColor(colors.textSecondary)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                  .foregroundColor(.gray)
+                  .foregroundColor(colors.textSecondary)
               }
             }
             
@@ -260,29 +294,29 @@ struct SettingsViewNew: View {
             }) {
               HStack {
                 Image(systemName: "arrow.counterclockwise")
-                  .foregroundColor(.red)
+                  .foregroundColor(colors.danger)
                 VStack(alignment: .leading, spacing: 4) {
                   Text("Reset App & Start Over")
-                    .foregroundColor(.white)
+                    .foregroundColor(colors.textPrimary)
                   Text("Clear all settings and blocks")
                     .font(.caption)
-                    .foregroundColor(.gray)
+                    .foregroundColor(colors.textSecondary)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                  .foregroundColor(.gray)
+                  .foregroundColor(colors.textSecondary)
               }
             }
           } header: {
             #if DEBUG
             Text("Development & Actions")
-              .foregroundColor(.white)
+              .foregroundColor(colors.textPrimary)
             #else
             Text("Actions")
-              .foregroundColor(.white)
+              .foregroundColor(colors.textPrimary)
             #endif
           }
-          .listRowBackground(Color.white.opacity(0.1))
+          .listRowBackground(colors.surface)
         }
         .scrollContentBackground(.hidden)
       }
@@ -317,9 +351,21 @@ struct SettingsViewNew: View {
       }
     }
   }
+  
+  private func handlePauseStateChange(_ isPaused: Bool) {
+    if isPaused {
+      screenTimeManager.removeAllShields()
+    } else {
+      screenTimeManager.updateShielding()
+    }
+    
+    // Update home screen quick actions
+    NotificationCenter.default.post(name: NSNotification.Name("UpdateQuickActions"), object: nil)
+  }
 }
 
 struct InfoRow: View {
+  @Environment(\.themeColors) private var colors
   let number: String
   let text: String
   
@@ -327,13 +373,13 @@ struct InfoRow: View {
     HStack(alignment: .top, spacing: 12) {
       Text(number)
         .font(.caption.bold())
-        .foregroundColor(.white)
+        .foregroundColor(colors.textOnAccent)
         .frame(width: 20, height: 20)
-        .background(Color.blue)
+        .background(colors.primary)
         .clipShape(Circle())
       
       Text(text)
-        .foregroundColor(.gray)
+        .foregroundColor(colors.textSecondary)
     }
   }
 }

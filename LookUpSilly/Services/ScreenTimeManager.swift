@@ -50,6 +50,15 @@ class ScreenTimeManager: ObservableObject {
   }
   
   private func applyShield() {
+    // Check if challenges are paused
+    let challengesPaused = UserDefaults.standard.bool(forKey: "challengesPaused")
+    
+    // If challenges are paused, don't apply shields
+    if challengesPaused {
+      removeAllShields()
+      return
+    }
+    
     // Shield blocked applications, except allowed ones
     if !allowedApps.applicationTokens.isEmpty {
       // If we have allowed apps, shield blocked apps except the allowed ones
@@ -74,6 +83,10 @@ class ScreenTimeManager: ObservableObject {
   func removeAllShields() {
     store.shield.applications = nil
     store.shield.applicationCategories = nil
+  }
+  
+  func updateShielding() {
+    applyShield()
   }
   
   // MARK: - Temporary Access

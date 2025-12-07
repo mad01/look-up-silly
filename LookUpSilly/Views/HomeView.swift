@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct HomeView: View {
+  @Environment(\.themeColors) private var colors
   @EnvironmentObject var appSettings: AppSettings
   @EnvironmentObject var challengeManager: ChallengeManager
   @State private var showingChallengeSheet = false
@@ -8,7 +9,7 @@ struct HomeView: View {
   var body: some View {
     NavigationStack {
       ZStack {
-        Color.black.ignoresSafeArea()
+        colors.background.ignoresSafeArea()
         
         ScrollView {
           VStack(spacing: 30) {
@@ -21,11 +22,11 @@ struct HomeView: View {
               
               Text("Look Up, Silly!")
                 .font(.system(size: 32, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
+                .foregroundColor(colors.textPrimary)
               
               Text("Stay focused, break the scroll")
                 .font(.subheadline)
-                .foregroundColor(.gray)
+                .foregroundColor(colors.textSecondary)
             }
             .padding(.top, 40)
             
@@ -33,12 +34,12 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 16) {
               Text("Allowed Apps")
                 .font(.title2.bold())
-                .foregroundColor(.white)
+                .foregroundColor(colors.textPrimary)
                 .padding(.horizontal, 20)
               
               if appSettings.allowedApps.isEmpty {
                 Text("No allowed apps yet. Add some in Settings.")
-                  .foregroundColor(.gray)
+                  .foregroundColor(colors.textSecondary)
                   .padding(.horizontal, 20)
               } else {
                 VStack(spacing: 12) {
@@ -54,7 +55,7 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 16) {
               Text("Challenge Required")
                 .font(.title2.bold())
-                .foregroundColor(.white)
+                .foregroundColor(colors.textPrimary)
                 .padding(.horizontal, 20)
               
               VStack(spacing: 12) {
@@ -89,6 +90,7 @@ struct HomeView: View {
 }
 
 struct AppCard: View {
+  @Environment(\.themeColors) private var colors
   let app: InstalledApp
   let isAllowed: Bool
   var onTap: (() -> Void)? = nil
@@ -100,31 +102,31 @@ struct AppCard: View {
       HStack {
         Image(systemName: app.icon)
           .font(.system(size: 32))
-          .foregroundColor(.blue)
+          .foregroundColor(colors.primary)
           .frame(width: 50)
         
         VStack(alignment: .leading, spacing: 4) {
           Text(app.name)
             .font(.headline)
-            .foregroundColor(.white)
+            .foregroundColor(colors.textPrimary)
           
           Text(isAllowed ? "Allowed" : "Challenge Required")
             .font(.caption)
-            .foregroundColor(isAllowed ? .green : .orange)
+            .foregroundColor(isAllowed ? colors.success : colors.warning)
         }
         
         Spacer()
         
         if !isAllowed {
           Image(systemName: "lock.fill")
-            .foregroundColor(.orange)
+            .foregroundColor(colors.warning)
         } else {
           Image(systemName: "checkmark.circle.fill")
-            .foregroundColor(.green)
+            .foregroundColor(colors.success)
         }
       }
       .padding()
-      .background(Color.white.opacity(0.1))
+      .background(colors.surface)
       .cornerRadius(12)
     }
     .disabled(isAllowed)

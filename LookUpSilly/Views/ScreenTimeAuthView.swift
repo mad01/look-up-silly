@@ -2,6 +2,7 @@ import SwiftUI
 import FamilyControls
 
 struct ScreenTimeAuthView: View {
+  @Environment(\.themeColors) private var colors
   @StateObject private var screenTimeManager = ScreenTimeManager.shared
   @State private var isRequesting = false
   @State private var errorMessage: String?
@@ -9,7 +10,7 @@ struct ScreenTimeAuthView: View {
   
   var body: some View {
     ZStack {
-      Color.black.ignoresSafeArea()
+      colors.background.ignoresSafeArea()
       
       VStack(spacing: 30) {
         Spacer()
@@ -18,16 +19,16 @@ struct ScreenTimeAuthView: View {
           .resizable()
           .aspectRatio(contentMode: .fit)
           .frame(width: 100, height: 100)
-          .foregroundStyle(.blue.gradient)
+          .foregroundStyle(colors.primary.gradient)
         
         VStack(spacing: 12) {
           Text("Screen Time Access")
             .font(.system(size: 32, weight: .bold, design: .rounded))
-            .foregroundColor(.white)
+            .foregroundColor(colors.textPrimary)
           
           Text("Look Up, Silly! needs Screen Time access to manage app blocking")
             .font(.system(size: 16))
-            .foregroundColor(.gray)
+            .foregroundColor(colors.textSecondary)
             .multilineTextAlignment(.center)
             .padding(.horizontal, 40)
         }
@@ -51,7 +52,7 @@ struct ScreenTimeAuthView: View {
         if let error = errorMessage {
           Text(error)
             .font(.caption)
-            .foregroundColor(.red)
+            .foregroundColor(colors.error)
             .padding(.horizontal, 40)
         }
         
@@ -63,15 +64,15 @@ struct ScreenTimeAuthView: View {
           HStack {
             if isRequesting {
               ProgressView()
-                .tint(.white)
+                .tint(colors.textOnAccent)
             }
             Text(isRequesting ? "Requesting..." : "Grant Access")
               .font(.headline)
           }
-          .foregroundColor(.white)
+          .foregroundColor(colors.textOnAccent)
           .frame(maxWidth: .infinity)
           .padding()
-          .background(isRequesting ? Color.gray : Color.blue)
+          .background(isRequesting ? colors.textDisabled : colors.primary)
           .cornerRadius(12)
         }
         .disabled(isRequesting)
@@ -102,6 +103,7 @@ struct ScreenTimeAuthView: View {
 }
 
 struct PermissionFeatureRow: View {
+  @Environment(\.themeColors) private var colors
   let icon: String
   let text: String
   
@@ -109,12 +111,12 @@ struct PermissionFeatureRow: View {
     HStack(spacing: 16) {
       Image(systemName: icon)
         .font(.system(size: 24))
-        .foregroundColor(.blue)
+        .foregroundColor(colors.primary)
         .frame(width: 30)
       
       Text(text)
         .font(.system(size: 16))
-        .foregroundColor(.white)
+        .foregroundColor(colors.textPrimary)
     }
   }
 }

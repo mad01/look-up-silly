@@ -93,6 +93,7 @@ struct MathProblem {
 // MARK: - Math Challenge View
 
 struct MathChallengeView: View {
+  @Environment(\.themeColors) private var colors
   @ObservedObject var challenge: MathChallenge
   let onComplete: () -> Void
   @FocusState private var isInputFocused: Bool
@@ -100,7 +101,7 @@ struct MathChallengeView: View {
   var body: some View {
     GeometryReader { geometry in
       ZStack {
-        Color.black.ignoresSafeArea()
+        colors.background.ignoresSafeArea()
         
         ScrollView {
           VStack(spacing: 40) {
@@ -108,15 +109,15 @@ struct MathChallengeView: View {
             VStack(spacing: 12) {
               Image(systemName: "function")
                 .font(.system(size: 60))
-                .foregroundStyle(.blue.gradient)
+                .foregroundStyle(colors.mathChallenge.gradient)
               
               Text("Math Challenge")
                 .font(.system(size: 32, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundColor(colors.textPrimary)
               
               Text("Solve 5 problems to continue")
                 .font(.subheadline)
-                .foregroundColor(.gray)
+                .foregroundColor(colors.textSecondary)
             }
             .padding(.top, 60)
             
@@ -124,8 +125,8 @@ struct MathChallengeView: View {
             HStack(spacing: 8) {
               ForEach(0..<5) { index in
                 Circle()
-                  .fill(index < challenge.currentProblemIndex ? Color.green : 
-                        index == challenge.currentProblemIndex ? Color.blue : Color.gray.opacity(0.3))
+                  .fill(index < challenge.currentProblemIndex ? colors.success : 
+                        index == challenge.currentProblemIndex ? colors.mathChallenge : colors.textDisabled)
                   .frame(width: 12, height: 12)
               }
             }
@@ -135,30 +136,30 @@ struct MathChallengeView: View {
               VStack(spacing: 30) {
                 Text("Problem \(challenge.currentProblemIndex + 1) of 5")
                   .font(.headline)
-                  .foregroundColor(.gray)
+                  .foregroundColor(colors.textSecondary)
                 
                 Text(challenge.problems[challenge.currentProblemIndex].question)
                   .font(.system(size: 48, weight: .bold, design: .rounded))
-                  .foregroundColor(.white)
+                  .foregroundColor(colors.textPrimary)
                 
                 TextField("Your answer", text: $challenge.userAnswer)
                   .keyboardType(.numberPad)
                   .font(.system(size: 32, weight: .semibold))
                   .multilineTextAlignment(.center)
-                  .foregroundColor(.white)
+                  .foregroundColor(colors.textPrimary)
                   .padding()
-                  .background(Color.white.opacity(0.1))
+                  .background(colors.surface)
                   .cornerRadius(12)
                   .focused($isInputFocused)
                   .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                      .stroke(challenge.showError ? Color.red : Color.clear, lineWidth: 2)
+                      .stroke(challenge.showError ? colors.error : Color.clear, lineWidth: 2)
                   )
                   .padding(.horizontal, 40)
                 
                 if challenge.showError {
                   Text("Incorrect! Try again")
-                    .foregroundColor(.red)
+                    .foregroundColor(colors.error)
                     .font(.headline)
                 }
                 
@@ -167,10 +168,10 @@ struct MathChallengeView: View {
                 }) {
                   Text("Submit")
                     .font(.headline)
-                    .foregroundColor(.white)
+                    .foregroundColor(colors.textOnAccent)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(challenge.userAnswer.isEmpty ? Color.gray : Color.blue)
+                    .background(challenge.userAnswer.isEmpty ? colors.textDisabled : colors.mathChallenge)
                     .cornerRadius(12)
                 }
                 .disabled(challenge.userAnswer.isEmpty)

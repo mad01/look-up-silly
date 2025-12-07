@@ -231,28 +231,29 @@ class TicTacToeGame: ObservableObject {
 // MARK: - Tic-Tac-Toe View
 
 struct TicTacToeView: View {
+  @Environment(\.themeColors) private var colors
   @ObservedObject var challenge: TicTacToeChallenge
   @StateObject private var game = TicTacToeGame()
   let onComplete: () -> Void
   
   var body: some View {
     ZStack {
-      Color.black.ignoresSafeArea()
+      colors.background.ignoresSafeArea()
       
       VStack(spacing: 40) {
         // Header
         VStack(spacing: 12) {
           Image(systemName: "square.grid.3x3.fill")
             .font(.system(size: 60))
-            .foregroundStyle(.blue.gradient)
+            .foregroundStyle(colors.ticTacToe.gradient)
           
           Text("Tic-Tac-Toe")
             .font(.system(size: 32, weight: .bold))
-            .foregroundColor(.white)
+            .foregroundColor(colors.textPrimary)
           
           Text("Win 1 game to continue")
             .font(.subheadline)
-            .foregroundColor(.gray)
+            .foregroundColor(colors.textSecondary)
         }
         .padding(.top, 60)
         
@@ -260,8 +261,8 @@ struct TicTacToeView: View {
         VStack(spacing: 8) {
           Text(game.gameState.message)
             .font(.title2.bold())
-            .foregroundColor(game.gameState == .humanWon ? .green : 
-                           game.gameState == .computerWon ? .red : .white)
+            .foregroundColor(game.gameState == .humanWon ? colors.success : 
+                           game.gameState == .computerWon ? colors.error : colors.textPrimary)
           
           if game.gameState == .playing {
             let humanPieces = game.board.filter { $0 == .human }.count
@@ -269,23 +270,23 @@ struct TicTacToeView: View {
               if game.selectedPieceIndex != nil {
                 Text("Now tap an empty space to move")
                   .font(.subheadline)
-                  .foregroundColor(.blue)
+                  .foregroundColor(colors.ticTacToe)
               } else {
                 Text("Select one of your pieces to move")
                   .font(.subheadline)
-                  .foregroundColor(.orange)
+                  .foregroundColor(colors.warning)
               }
             } else {
               Text("Place your piece (\(humanPieces)/\(game.maxPieces))")
                 .font(.subheadline)
-                .foregroundColor(.gray)
+                .foregroundColor(colors.textSecondary)
             }
           }
           
           // Reserve space for computer thinking message to prevent layout jump
           Text(game.isComputerThinking ? "Computer is thinking..." : " ")
             .font(.subheadline)
-            .foregroundColor(.gray)
+            .foregroundColor(colors.textSecondary)
             .opacity(game.isComputerThinking ? 1 : 0)
             .frame(height: 20)
         }
@@ -329,10 +330,10 @@ struct TicTacToeView: View {
             Text(game.gameState == .humanWon && challenge.gamesWon >= challenge.requiredWins - 1 ? 
                  "Complete!" : "Play Again")
               .font(.headline)
-              .foregroundColor(.white)
+              .foregroundColor(colors.textOnAccent)
               .frame(maxWidth: .infinity)
               .padding()
-              .background(Color.blue)
+              .background(colors.ticTacToe)
               .cornerRadius(12)
           }
           .padding(.horizontal, 40)
@@ -346,24 +347,25 @@ struct TicTacToeView: View {
 // MARK: - Cell View
 
 struct CellView: View {
+  @Environment(\.themeColors) private var colors
   let player: Player
   let isSelected: Bool
   
   var body: some View {
     ZStack {
       RoundedRectangle(cornerRadius: 12)
-        .fill(Color.white.opacity(0.1))
+        .fill(colors.surface)
         .frame(width: 100, height: 100)
       
       if isSelected {
         RoundedRectangle(cornerRadius: 12)
-          .stroke(Color.yellow, lineWidth: 3)
+          .stroke(colors.cautionYellow, lineWidth: 3)
           .frame(width: 100, height: 100)
       }
       
       Text(player.symbol)
         .font(.system(size: 48, weight: .bold))
-        .foregroundColor(player == .human ? .blue : .red)
+        .foregroundColor(player == .human ? colors.ticTacToe : colors.error)
     }
   }
 }

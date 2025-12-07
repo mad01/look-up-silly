@@ -1,12 +1,13 @@
 import SwiftUI
 
 struct StartupView: View {
+  @Environment(\.themeColors) private var colors
   @State private var scale: CGFloat = 0.8
   @State private var opacity: Double = 0
   
   var body: some View {
     ZStack {
-      Color.black.ignoresSafeArea()
+      colors.background.ignoresSafeArea()
       
       VStack(spacing: 20) {
         // App Logo
@@ -19,12 +20,12 @@ struct StartupView: View {
         
         Text("Look Up, Silly!")
           .font(.system(size: 32, weight: .bold, design: .rounded))
-          .foregroundColor(.white)
+          .foregroundColor(colors.textPrimary)
           .opacity(opacity)
         
         Text("Break free from doomscrolling")
           .font(.system(size: 16, weight: .regular))
-          .foregroundColor(.gray)
+          .foregroundColor(colors.textSecondary)
           .opacity(opacity)
           .multilineTextAlignment(.center)
       }

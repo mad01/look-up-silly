@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MainTabView: View {
+  @Environment(\.themeColors) private var colors
   @EnvironmentObject var appSettings: AppSettings
   
   var body: some View {
@@ -15,6 +16,7 @@ struct MainTabView: View {
           Label("Settings", systemImage: "gear")
         }
     }
+    .tint(colors.primary)
   }
 }
 
