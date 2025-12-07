@@ -12,7 +12,7 @@ enum ChallengeType: String, CaseIterable {
     case .ticTacToe:
       return "square.grid.3x3.fill"
     case .micro2048:
-      return "square.grid.4x4.fill"
+      return "square.grid.3x3.fill"
     }
   }
   

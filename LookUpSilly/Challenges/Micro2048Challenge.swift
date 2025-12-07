@@ -300,7 +300,7 @@ struct Micro2048View: View {
         .opacity(showCancelButton ? 1 : 0)
         // Header
         VStack(spacing: 12) {
-          Image(systemName: "square.grid.4x4.fill")
+          Image(systemName: "square.grid.3x3.fill")
             .font(.system(size: 60))
             .foregroundStyle(colors.micro2048.gradient)
           

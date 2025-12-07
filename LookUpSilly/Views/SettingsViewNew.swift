@@ -254,7 +254,7 @@ struct SettingsViewNew: View {
               }
               
               HStack {
-                Image(systemName: "square.grid.4x4.fill")
+                Image(systemName: "square.grid.3x3.fill")
                   .foregroundColor(colors.micro2048)
                 Text("Micro 2048")
                   .foregroundColor(colors.textSecondary)
