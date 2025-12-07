@@ -54,6 +54,7 @@ struct WarmCalmTheme {
   // Game/Challenge specific
   static let mathChallenge = Color(red: 140/255, green: 165/255, blue: 180/255) // Calm blue
   static let ticTacToe = Color(red: 160/255, green: 175/255, blue: 140/255)     // Sage green
+  static let micro2048 = Color(red: 220/255, green: 170/255, blue: 110/255)     // Warm amber
   
   // Chart/Statistics colors - Warm harmonious palette
   static let chartPrimary = Color(red: 210/255, green: 145/255, blue: 110/255)
@@ -116,6 +117,7 @@ struct ThemeColors {
   
   let mathChallenge = WarmCalmTheme.mathChallenge
   let ticTacToe = WarmCalmTheme.ticTacToe
+  let micro2048 = WarmCalmTheme.micro2048
   
   let chartPrimary = WarmCalmTheme.chartPrimary
   let chartSecondary = WarmCalmTheme.chartSecondary

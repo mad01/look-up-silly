@@ -103,6 +103,40 @@ struct SettingsViewNew: View {
           .listRowBackground(colors.surface)
           
           Section {
+            VStack(alignment: .leading, spacing: 12) {
+              HStack {
+                Image(systemName: "xmark.circle")
+                  .foregroundColor(colors.info)
+                  .font(.system(size: 24))
+                VStack(alignment: .leading, spacing: 4) {
+                  Text("Cancel Button Delay")
+                    .foregroundColor(colors.textPrimary)
+                    .font(.headline)
+                  Text("Show cancel button after \(appSettings.challengeCancelDelaySeconds) seconds")
+                    .font(.caption)
+                    .foregroundColor(colors.textSecondary)
+                }
+                Spacer()
+              }
+              
+              Picker("", selection: $appSettings.challengeCancelDelaySeconds) {
+                Text("60").tag(60)
+                Text("90").tag(90)
+                Text("120").tag(120)
+                Text("180").tag(180)
+              }
+              .pickerStyle(.segmented)
+            }
+          } header: {
+            Text("Challenge Settings")
+              .foregroundColor(colors.textPrimary)
+          } footer: {
+            Text("Control when the cancel button appears in challenges. Always visible in Play for Fun mode.")
+              .foregroundColor(colors.textSecondary)
+          }
+          .listRowBackground(colors.surface)
+          
+          Section {
             if revenueCat.hasContributed {
               HStack {
                 Image(systemName: "heart.circle.fill")
@@ -216,6 +250,16 @@ struct SettingsViewNew: View {
                   .foregroundColor(colors.textSecondary)
                 Spacer()
                 Text("\(statsManager.ticTacToeChallengesCompleted)")
+                  .foregroundColor(colors.textPrimary)
+              }
+              
+              HStack {
+                Image(systemName: "square.grid.4x4.fill")
+                  .foregroundColor(colors.micro2048)
+                Text("Micro 2048")
+                  .foregroundColor(colors.textSecondary)
+                Spacer()
+                Text("\(statsManager.micro2048ChallengesCompleted)")
                   .foregroundColor(colors.textPrimary)
               }
               

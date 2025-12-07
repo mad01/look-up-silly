@@ -127,9 +127,17 @@ struct ChallengeTestView: View {
   private func startChallenge() {
     switch selectedChallengeType {
     case .math:
-      currentChallenge = MathChallenge()
+      let challenge = MathChallenge()
+      challenge.isTestMode = true
+      currentChallenge = challenge
     case .ticTacToe:
-      currentChallenge = TicTacToeChallenge()
+      let challenge = TicTacToeChallenge()
+      challenge.isTestMode = true
+      currentChallenge = challenge
+    case .micro2048:
+      let challenge = Micro2048Challenge()
+      challenge.isTestMode = true
+      currentChallenge = challenge
     }
     showingChallenge = true
   }

@@ -4,6 +4,7 @@ class AppSettings: ObservableObject {
   @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding: Bool = false
   @AppStorage("allowedApps") private var allowedAppsData: Data = Data()
   @AppStorage("challengesPaused") var challengesPaused: Bool = false
+  @AppStorage("challengeCancelDelaySeconds") var challengeCancelDelaySeconds: Int = 60
   
   @Published var allowedApps: Set<String> = []
   

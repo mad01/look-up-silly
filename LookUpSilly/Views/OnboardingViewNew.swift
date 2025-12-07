@@ -8,6 +8,15 @@ struct OnboardingViewNew: View {
   @State private var currentPage = 0
   @State private var hasScreenTimeAuth = false
   
+  // Allow continuing in simulator even without app selection (for testing)
+  private var canContinue: Bool {
+    #if targetEnvironment(simulator)
+    return true
+    #else
+    return !screenTimeManager.blockedApps.applicationTokens.isEmpty
+    #endif
+  }
+  
   var body: some View {
     ZStack {
       colors.background.ignoresSafeArea()
@@ -126,10 +135,10 @@ struct OnboardingViewNew: View {
             .foregroundColor(colors.textOnAccent)
             .frame(maxWidth: .infinity)
             .padding()
-            .background(!screenTimeManager.blockedApps.applicationTokens.isEmpty ? colors.primary : colors.textDisabled)
+            .background(canContinue ? colors.primary : colors.textDisabled)
             .cornerRadius(12)
         }
-        .disabled(screenTimeManager.blockedApps.applicationTokens.isEmpty)
+        .disabled(!canContinue)
         .padding(.horizontal, 40)
         .padding(.vertical, 30)
       }

@@ -3,6 +3,7 @@ import SwiftUI
 enum ChallengeType: String, CaseIterable {
   case math = "Math Challenge"
   case ticTacToe = "Tic-Tac-Toe"
+  case micro2048 = "Micro 2048"
   
   var icon: String {
     switch self {
@@ -10,6 +11,8 @@ enum ChallengeType: String, CaseIterable {
       return "function"
     case .ticTacToe:
       return "square.grid.3x3.fill"
+    case .micro2048:
+      return "square.grid.4x4.fill"
     }
   }
   
@@ -19,6 +22,8 @@ enum ChallengeType: String, CaseIterable {
       return "Solve 5 math problems"
     case .ticTacToe:
       return "Win 1 game against computer"
+    case .micro2048:
+      return "Reach 128 in the puzzle"
     }
   }
 }

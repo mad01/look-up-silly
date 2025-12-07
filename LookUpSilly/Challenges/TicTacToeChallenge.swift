@@ -8,6 +8,7 @@ class TicTacToeChallenge: Challenge, ObservableObject {
   @Published var isCompleted = false
   @Published var gamesWon = 0
   let requiredWins = 1
+  var isTestMode = false
   
   @MainActor
   func view(onComplete: @escaping () -> Void) -> AnyView {
@@ -232,15 +233,44 @@ class TicTacToeGame: ObservableObject {
 
 struct TicTacToeView: View {
   @Environment(\.themeColors) private var colors
+  @Environment(\.dismiss) private var dismiss
+  @EnvironmentObject var appSettings: AppSettings
   @ObservedObject var challenge: TicTacToeChallenge
   @StateObject private var game = TicTacToeGame()
   let onComplete: () -> Void
+  
+  @State private var elapsedTime: TimeInterval = 0
+  @State private var timer: Timer?
+  
+  var showCancelButton: Bool {
+    // Always show in test mode, or after the configured delay in challenge mode
+    challenge.isTestMode || elapsedTime >= TimeInterval(appSettings.challengeCancelDelaySeconds)
+  }
   
   var body: some View {
     ZStack {
       colors.background.ignoresSafeArea()
       
       VStack(spacing: 40) {
+        // Cancel button
+        HStack {
+          Spacer()
+          if showCancelButton {
+            Button(action: {
+              dismiss()
+            }) {
+              Image(systemName: "xmark.circle.fill")
+                .font(.system(size: 28))
+                .foregroundColor(colors.textSecondary)
+            }
+            .padding(.trailing, 20)
+            .padding(.top, 20)
+            .transition(.opacity)
+          }
+        }
+        .frame(height: showCancelButton ? nil : 0)
+        .opacity(showCancelButton ? 1 : 0)
+        
         // Header
         VStack(spacing: 12) {
           Image(systemName: "square.grid.3x3.fill")
@@ -341,6 +371,27 @@ struct TicTacToeView: View {
         }
       }
     }
+    .interactiveDismissDisabled(!showCancelButton)
+    .onAppear {
+      startTimer()
+    }
+    .onDisappear {
+      stopTimer()
+    }
+  }
+  
+  private func startTimer() {
+    timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+      Task { @MainActor [weak timer] in
+        guard timer != nil else { return }
+        elapsedTime += 1
+      }
+    }
+  }
+  
+  private func stopTimer() {
+    timer?.invalidate()
+    timer = nil
   }
 }
 

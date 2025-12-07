@@ -16,6 +16,8 @@ class ChallengeManager: ObservableObject {
       currentChallenge = MathChallenge()
     case .ticTacToe:
       currentChallenge = TicTacToeChallenge()
+    case .micro2048:
+      currentChallenge = Micro2048Challenge()
     }
     
     showingChallenge = true

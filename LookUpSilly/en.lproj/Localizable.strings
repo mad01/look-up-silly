@@ -33,6 +33,9 @@
 "settings.resume_challenges" = "Resume Challenges";
 "settings.challenges_paused" = "Challenges are paused";
 "settings.challenges_active" = "Challenges are active";
+"settings.cancel_button_delay" = "Cancel Button Delay";
+"settings.cancel_button_delay_description" = "Show cancel button after %d seconds";
+"settings.cancel_button_delay_footer" = "Control when the cancel button appears in challenges. Always visible in Play for Fun mode.";
 
 /* Pause Duration */
 "pause.title" = "Pause Challenges";
@@ -71,6 +74,16 @@
 "challenge.tictactoe.thinking" = "Computer is thinking...";
 "challenge.tictactoe.play_again" = "Play Again";
 "challenge.tictactoe.complete" = "Complete!";
+
+"challenge.micro2048.title" = "Micro 2048";
+"challenge.micro2048.subtitle" = "Reach 128 to continue";
+"challenge.micro2048.you_won" = "You won! 🎉";
+"challenge.micro2048.game_over" = "Game Over!";
+"challenge.micro2048.swipe_to_move" = "Swipe to move tiles";
+"challenge.micro2048.new_game" = "New Game";
+"challenge.micro2048.complete" = "Complete!";
+"challenge.micro2048.score" = "SCORE";
+"challenge.micro2048.highest" = "HIGHEST";
 
 /* Status */
 "status.allowed" = "Allowed";

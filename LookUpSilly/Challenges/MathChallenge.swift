@@ -10,6 +10,7 @@ class MathChallenge: Challenge, ObservableObject {
   @Published private(set) var currentProblemIndex = 0
   @Published var userAnswer = ""
   @Published var showError = false
+  var isTestMode = false
   
   init() {
     generateProblems()
@@ -94,9 +95,19 @@ struct MathProblem {
 
 struct MathChallengeView: View {
   @Environment(\.themeColors) private var colors
+  @Environment(\.dismiss) private var dismiss
+  @EnvironmentObject var appSettings: AppSettings
   @ObservedObject var challenge: MathChallenge
   let onComplete: () -> Void
   @FocusState private var isInputFocused: Bool
+  
+  @State private var elapsedTime: TimeInterval = 0
+  @State private var timer: Timer?
+  
+  var showCancelButton: Bool {
+    // Always show in test mode, or after the configured delay in challenge mode
+    challenge.isTestMode || elapsedTime >= TimeInterval(appSettings.challengeCancelDelaySeconds)
+  }
   
   var body: some View {
     ZStack {
@@ -104,6 +115,25 @@ struct MathChallengeView: View {
       
       ScrollView {
         VStack(spacing: 24) {
+          // Cancel button
+          HStack {
+            Spacer()
+            if showCancelButton {
+              Button(action: {
+                dismiss()
+              }) {
+                Image(systemName: "xmark.circle.fill")
+                  .font(.system(size: 28))
+                  .foregroundColor(colors.textSecondary)
+              }
+              .padding(.trailing, 20)
+              .padding(.top, 20)
+              .transition(.opacity)
+            }
+          }
+          .frame(height: showCancelButton ? nil : 0)
+          .opacity(showCancelButton ? 1 : 0)
+          
           // Header
           VStack(spacing: 12) {
             Image(systemName: "function")
@@ -188,8 +218,13 @@ struct MathChallengeView: View {
       }
       .scrollDismissesKeyboard(.interactively)
     }
+    .interactiveDismissDisabled(!showCancelButton)
     .onAppear {
       isInputFocused = true
+      startTimer()
+    }
+    .onDisappear {
+      stopTimer()
     }
     .onChange(of: challenge.isCompleted) { _, completed in
       if completed {
@@ -198,6 +233,20 @@ struct MathChallengeView: View {
         }
       }
     }
+  }
+  
+  private func startTimer() {
+    timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+      Task { @MainActor [weak timer] in
+        guard timer != nil else { return }
+        elapsedTime += 1
+      }
+    }
+  }
+  
+  private func stopTimer() {
+    timer?.invalidate()
+    timer = nil
   }
 }
 
