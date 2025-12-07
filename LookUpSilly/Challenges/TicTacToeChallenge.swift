@@ -240,18 +240,20 @@ struct TicTacToeView: View {
   let onComplete: () -> Void
   
   @State private var elapsedTime: TimeInterval = 0
-  @State private var timer: Timer?
+  
+  private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+  
+  // Fixed cell size for the game board
+  private let cellSize: CGFloat = 90
+  private let cellSpacing: CGFloat = 10
   
   var showCancelButton: Bool {
-    // Always show in test mode, or after the configured delay in challenge mode
     challenge.isTestMode || elapsedTime >= TimeInterval(appSettings.challengeCancelDelaySeconds)
   }
   
   var body: some View {
-    ZStack {
-      colors.background.ignoresSafeArea()
-      
-      VStack(spacing: 40) {
+    ScrollView {
+      VStack(spacing: 16) {
         // Cancel button
         HStack {
           Spacer()
@@ -272,7 +274,7 @@ struct TicTacToeView: View {
         .opacity(showCancelButton ? 1 : 0)
         
         // Header
-        VStack(spacing: 12) {
+        VStack(spacing: 8) {
           Image(systemName: "square.grid.3x3.fill")
             .font(.system(size: 60))
             .foregroundStyle(colors.ticTacToe.gradient)
@@ -282,15 +284,15 @@ struct TicTacToeView: View {
             .foregroundColor(colors.textPrimary)
           
           Text("Win 1 game to continue")
-            .font(.subheadline)
+            .font(.system(size: 14))
             .foregroundColor(colors.textSecondary)
         }
-        .padding(.top, 60)
+        .padding(.top, 16)
         
         // Game Status
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
           Text(game.gameState.message)
-            .font(.title2.bold())
+            .font(.system(size: 22, weight: .bold))
             .foregroundColor(game.gameState == .humanWon ? colors.success : 
                            game.gameState == .computerWon ? colors.error : colors.textPrimary)
           
@@ -299,37 +301,38 @@ struct TicTacToeView: View {
             if humanPieces >= game.maxPieces {
               if game.selectedPieceIndex != nil {
                 Text("Now tap an empty space to move")
-                  .font(.subheadline)
+                  .font(.system(size: 14))
                   .foregroundColor(colors.ticTacToe)
               } else {
                 Text("Select one of your pieces to move")
-                  .font(.subheadline)
+                  .font(.system(size: 14))
                   .foregroundColor(colors.warning)
               }
             } else {
               Text("Place your piece (\(humanPieces)/\(game.maxPieces))")
-                .font(.subheadline)
+                .font(.system(size: 14))
                 .foregroundColor(colors.textSecondary)
             }
           }
           
           // Reserve space for computer thinking message to prevent layout jump
           Text(game.isComputerThinking ? "Computer is thinking..." : " ")
-            .font(.subheadline)
+            .font(.system(size: 14))
             .foregroundColor(colors.textSecondary)
             .opacity(game.isComputerThinking ? 1 : 0)
-            .frame(height: 20)
+            .frame(height: 16)
         }
         
-        // Game Board
-        VStack(spacing: 12) {
-          ForEach(0..<3) { row in
-            HStack(spacing: 12) {
-              ForEach(0..<3) { col in
+        // Game Board - fixed size
+        VStack(spacing: cellSpacing) {
+          ForEach(0..<3, id: \.self) { row in
+            HStack(spacing: cellSpacing) {
+              ForEach(0..<3, id: \.self) { col in
                 let index = row * 3 + col
                 CellView(
                   player: game.board[index],
-                  isSelected: game.selectedPieceIndex == index
+                  isSelected: game.selectedPieceIndex == index,
+                  size: cellSize
                 )
                 .onTapGesture {
                   game.makeMove(at: index)
@@ -338,9 +341,7 @@ struct TicTacToeView: View {
             }
           }
         }
-        .padding(.horizontal, 40)
-        
-        Spacer()
+        .padding(.vertical, 20)
         
         // Reset Button
         if game.gameState != .playing {
@@ -367,31 +368,20 @@ struct TicTacToeView: View {
               .cornerRadius(12)
           }
           .padding(.horizontal, 40)
-          .padding(.bottom, 40)
         }
+        
+        Spacer()
+          .frame(height: 40)
       }
     }
+    .scrollDisabled(true)
+    .background(colors.background.ignoresSafeArea())
     .interactiveDismissDisabled(!showCancelButton)
-    .onAppear {
-      startTimer()
+    .presentationDetents([.large])
+    .presentationDragIndicator(.hidden)
+    .onReceive(timer) { _ in
+      elapsedTime += 1
     }
-    .onDisappear {
-      stopTimer()
-    }
-  }
-  
-  private func startTimer() {
-    timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-      Task { @MainActor [weak timer] in
-        guard timer != nil else { return }
-        elapsedTime += 1
-      }
-    }
-  }
-  
-  private func stopTimer() {
-    timer?.invalidate()
-    timer = nil
   }
 }
 
@@ -401,21 +391,22 @@ struct CellView: View {
   @Environment(\.themeColors) private var colors
   let player: Player
   let isSelected: Bool
+  let size: CGFloat
   
   var body: some View {
     ZStack {
       RoundedRectangle(cornerRadius: 12)
         .fill(colors.surface)
-        .frame(width: 100, height: 100)
+        .frame(width: size, height: size)
       
       if isSelected {
         RoundedRectangle(cornerRadius: 12)
           .stroke(colors.cautionYellow, lineWidth: 3)
-          .frame(width: 100, height: 100)
+          .frame(width: size, height: size)
       }
       
       Text(player.symbol)
-        .font(.system(size: 48, weight: .bold))
+        .font(.system(size: size * 0.48, weight: .bold))
         .foregroundColor(player == .human ? colors.ticTacToe : colors.error)
     }
   }

@@ -23,6 +23,9 @@
 "home.allowed_apps" = "Allowed Apps";
 "home.challenge_required" = "Challenge Required";
 "home.no_allowed_apps" = "No allowed apps yet. Add some in Settings.";
+"home.times_saved" = "Times Saved";
+"home.times_saved_subtitle" = "Challenges completed to stay focused";
+"home.last_7_days" = "Last 7 days";
 
 /* Settings */
 "settings.title" = "Settings";
@@ -76,12 +79,14 @@
 "challenge.tictactoe.complete" = "Complete!";
 
 "challenge.micro2048.title" = "Micro 2048";
-"challenge.micro2048.subtitle" = "Reach 128 to continue";
-"challenge.micro2048.you_won" = "You won! 🎉";
+"challenge.micro2048.subtitle" = "Reach 64 to continue";
+"challenge.micro2048.you_won" = "You reached 64! 🎉";
 "challenge.micro2048.game_over" = "Game Over!";
 "challenge.micro2048.swipe_to_move" = "Swipe to move tiles";
 "challenge.micro2048.new_game" = "New Game";
 "challenge.micro2048.complete" = "Complete!";
+"challenge.micro2048.finish" = "Finish Challenge";
+"challenge.micro2048.keep_playing" = "Keep playing or finish now";
 "challenge.micro2048.score" = "SCORE";
 "challenge.micro2048.highest" = "HIGHEST";
 

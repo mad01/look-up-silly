@@ -1,8 +1,8 @@
 import SwiftUI
 
 // MARK: - Micro 2048 Challenge
-// Challenge: Reach 128 in a 4x4 grid to unlock app access
-// Estimated completion time: 40-90 seconds
+// Challenge: Reach 64 in a 3x3 grid to unlock app access
+// Player can continue playing after reaching 64 and finish when they want
 
 class Micro2048Challenge: Challenge, ObservableObject {
   let type = ChallengeType.micro2048
@@ -15,7 +15,7 @@ class Micro2048Challenge: Challenge, ObservableObject {
   }
 }
 
-// MARK: - Game Direction
+// MARK: - Direction
 
 enum SwipeDirection {
   case up, down, left, right
@@ -23,16 +23,16 @@ enum SwipeDirection {
 
 // MARK: - Tile Model
 
-struct Tile: Identifiable, Equatable {
-  let id = UUID()
+struct GameTile: Identifiable, Equatable {
+  let id: UUID
   var value: Int
-  var position: Position
-  var isNew: Bool = false
+  var position: (row: Int, col: Int)
+  var isNew: Bool = true
   var isMerged: Bool = false
   
-  struct Position: Equatable {
-    var row: Int
-    var col: Int
+  static func == (lhs: GameTile, rhs: GameTile) -> Bool {
+    lhs.id == rhs.id && lhs.value == rhs.value &&
+    lhs.position.row == rhs.position.row && lhs.position.col == rhs.position.col
   }
 }
 
@@ -40,223 +40,335 @@ struct Tile: Identifiable, Equatable {
 
 @MainActor
 class Micro2048Game: ObservableObject {
-  @Published var tiles: [Tile] = []
-  @Published var score: Int = 0
-  @Published var hasWon: Bool = false
-  @Published var isGameOver: Bool = false
-  @Published var highestTile: Int = 0
+  @Published private(set) var tiles: [GameTile] = []
+  @Published private(set) var score: Int = 0
+  @Published private(set) var highestTile: Int = 0
+  @Published private(set) var hasReachedTarget: Bool = false
+  @Published private(set) var isGameOver: Bool = false
+  @Published var canContinue: Bool = false
   
   let gridSize = 4
-  let winningTile = 128
+  let targetValue = 64
+  
+  private var grid: [[GameTile?]]
   
   init() {
-    startNewGame()
+    grid = Array(repeating: Array(repeating: nil, count: 4), count: 4)
+    reset()
   }
   
-  func startNewGame() {
+  func reset() {
     tiles = []
+    grid = Array(repeating: Array(repeating: nil, count: gridSize), count: gridSize)
     score = 0
-    hasWon = false
-    isGameOver = false
     highestTile = 0
+    hasReachedTarget = false
+    isGameOver = false
+    canContinue = false
     
-    // Add two initial tiles
     addRandomTile()
     addRandomTile()
   }
   
   private func addRandomTile() {
-    let emptyPositions = getEmptyPositions()
-    guard !emptyPositions.isEmpty else { return }
+    var emptyPositions: [(Int, Int)] = []
     
-    let position = emptyPositions.randomElement()!
-    let value = Double.random(in: 0...1) < 0.9 ? 2 : 4 // 90% chance for 2, 10% for 4
-    let tile = Tile(value: value, position: position, isNew: true)
-    tiles.append(tile)
-  }
-  
-  private func getEmptyPositions() -> [Tile.Position] {
-    var positions: [Tile.Position] = []
     for row in 0..<gridSize {
       for col in 0..<gridSize {
-        let position = Tile.Position(row: row, col: col)
-        if !tiles.contains(where: { $0.position == position }) {
-          positions.append(position)
+        if grid[row][col] == nil {
+          emptyPositions.append((row, col))
         }
       }
     }
-    return positions
+    
+    guard let position = emptyPositions.randomElement() else { return }
+    
+    // 90% chance for 2, 10% chance for 4
+    let value = Int.random(in: 1...10) == 1 ? 4 : 2
+    let newTile = GameTile(id: UUID(), value: value, position: position)
+    
+    grid[position.0][position.1] = newTile
+    tiles.append(newTile)
+    
+    updateHighestTile()
   }
   
-  func move(direction: SwipeDirection) {
-    guard !isGameOver && !hasWon else { return }
+  private func updateHighestTile() {
+    highestTile = tiles.map { $0.value }.max() ?? 0
     
-    // Clear merge flags
-    for index in tiles.indices {
-      tiles[index].isMerged = false
-      tiles[index].isNew = false
+    if highestTile >= targetValue && !hasReachedTarget {
+      hasReachedTarget = true
+    }
+  }
+  
+  func move(_ direction: SwipeDirection) {
+    guard !isGameOver else { return }
+    
+    var moved = false
+    
+    // Reset merge status
+    for i in 0..<tiles.count {
+      tiles[i].isMerged = false
+      tiles[i].isNew = false
     }
     
-    let moved = performMove(direction: direction)
+    switch direction {
+    case .up:
+      moved = moveUp()
+    case .down:
+      moved = moveDown()
+    case .left:
+      moved = moveLeft()
+    case .right:
+      moved = moveRight()
+    }
     
     if moved {
-      addRandomTile()
-      updateHighestTile()
+      syncTilesFromGrid()
       
-      if highestTile >= winningTile {
-        hasWon = true
-      }
-      
-      if !canMove() {
-        isGameOver = true
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+        self?.addRandomTile()
+        self?.checkGameOver()
       }
     }
   }
   
-  private func performMove(direction: SwipeDirection) -> Bool {
+  private func moveLeft() -> Bool {
     var moved = false
-    var mergedInMove: Set<UUID> = []
     
-    let orderedIndices = getOrderedIndices(for: direction)
-    
-    for (row, col) in orderedIndices {
-      guard let tileIndex = tiles.firstIndex(where: { $0.position.row == row && $0.position.col == col }) else {
-        continue
-      }
+    for row in 0..<gridSize {
+      var newRow: [GameTile?] = []
+      var lastMerged = false
       
-      let currentTile = tiles[tileIndex]
-      var newPosition = currentTile.position
-      
-      // Try to move as far as possible in the direction
-      while true {
-        let nextPosition = getNextPosition(from: newPosition, direction: direction)
-        
-        // Check if next position is valid
-        guard isValidPosition(nextPosition) else { break }
-        
-        // Check if next position is empty
-        if let targetIndex = tiles.firstIndex(where: { $0.position == nextPosition }) {
-          let targetTile = tiles[targetIndex]
-          
-          // Check if we can merge
-          if targetTile.value == currentTile.value && 
-             !mergedInMove.contains(targetTile.id) &&
-             !mergedInMove.contains(currentTile.id) {
-            // Merge tiles
-            tiles[targetIndex].value *= 2
-            tiles[targetIndex].isMerged = true
-            score += tiles[targetIndex].value
-            mergedInMove.insert(tiles[targetIndex].id)
-            tiles.remove(at: tileIndex)
+      for col in 0..<gridSize {
+        if let tile = grid[row][col] {
+          if let lastTile = newRow.last, let last = lastTile, last.value == tile.value && !lastMerged {
+            // Merge: create new tile with new UUID
+            let mergedTile = GameTile(
+              id: UUID(),
+              value: last.value * 2,
+              position: (row, newRow.count - 1),
+              isNew: false,
+              isMerged: true
+            )
+            newRow[newRow.count - 1] = mergedTile
+            score += mergedTile.value
+            lastMerged = true
             moved = true
+          } else {
+            var movedTile = tile
+            movedTile.position = (row, newRow.count)
+            movedTile.isMerged = false
+            newRow.append(movedTile)
+            lastMerged = false
           }
-          break
-        } else {
-          newPosition = nextPosition
         }
       }
       
-      // Update position if it changed
-      if newPosition != currentTile.position {
-        if let index = tiles.firstIndex(where: { $0.id == currentTile.id }) {
-          tiles[index].position = newPosition
+      while newRow.count < gridSize {
+        newRow.append(nil)
+      }
+      
+      for col in 0..<gridSize {
+        if grid[row][col]?.value != newRow[col]?.value ||
+           (grid[row][col] != nil && newRow[col] != nil && grid[row][col]!.position.col != col) {
           moved = true
         }
+        grid[row][col] = newRow[col]
+        grid[row][col]?.position = (row, col)
       }
     }
     
     return moved
   }
   
-  private func getOrderedIndices(for direction: SwipeDirection) -> [(Int, Int)] {
-    var indices: [(Int, Int)] = []
+  private func moveRight() -> Bool {
+    var moved = false
     
-    switch direction {
-    case .up:
-      for row in 0..<gridSize {
-        for col in 0..<gridSize {
-          indices.append((row, col))
-        }
-      }
-    case .down:
-      for row in (0..<gridSize).reversed() {
-        for col in 0..<gridSize {
-          indices.append((row, col))
-        }
-      }
-    case .left:
-      for col in 0..<gridSize {
-        for row in 0..<gridSize {
-          indices.append((row, col))
-        }
-      }
-    case .right:
-      for col in (0..<gridSize).reversed() {
-        for row in 0..<gridSize {
-          indices.append((row, col))
-        }
-      }
-    }
-    
-    return indices
-  }
-  
-  private func getNextPosition(from position: Tile.Position, direction: SwipeDirection) -> Tile.Position {
-    switch direction {
-    case .up:
-      return Tile.Position(row: position.row - 1, col: position.col)
-    case .down:
-      return Tile.Position(row: position.row + 1, col: position.col)
-    case .left:
-      return Tile.Position(row: position.row, col: position.col - 1)
-    case .right:
-      return Tile.Position(row: position.row, col: position.col + 1)
-    }
-  }
-  
-  private func isValidPosition(_ position: Tile.Position) -> Bool {
-    return position.row >= 0 && position.row < gridSize &&
-           position.col >= 0 && position.col < gridSize
-  }
-  
-  private func canMove() -> Bool {
-    // Check if there are any empty positions
-    if !getEmptyPositions().isEmpty {
-      return true
-    }
-    
-    // Check if any adjacent tiles can merge
     for row in 0..<gridSize {
-      for col in 0..<gridSize {
-        let position = Tile.Position(row: row, col: col)
-        guard let tile = tiles.first(where: { $0.position == position }) else { continue }
-        
-        // Check adjacent tiles
-        let adjacentPositions = [
-          Tile.Position(row: row - 1, col: col),
-          Tile.Position(row: row + 1, col: col),
-          Tile.Position(row: row, col: col - 1),
-          Tile.Position(row: row, col: col + 1)
-        ]
-        
-        for adjPos in adjacentPositions {
-          if let adjTile = tiles.first(where: { $0.position == adjPos }),
-             adjTile.value == tile.value {
-            return true
+      var newRow: [GameTile?] = []
+      var lastMerged = false
+      
+      for col in stride(from: gridSize - 1, through: 0, by: -1) {
+        if let tile = grid[row][col] {
+          if let lastTile = newRow.last, let last = lastTile, last.value == tile.value && !lastMerged {
+            let mergedTile = GameTile(
+              id: UUID(),
+              value: last.value * 2,
+              position: (row, gridSize - newRow.count),
+              isNew: false,
+              isMerged: true
+            )
+            newRow[newRow.count - 1] = mergedTile
+            score += mergedTile.value
+            lastMerged = true
+            moved = true
+          } else {
+            var movedTile = tile
+            movedTile.position = (row, gridSize - 1 - newRow.count)
+            movedTile.isMerged = false
+            newRow.append(movedTile)
+            lastMerged = false
           }
         }
       }
+      
+      while newRow.count < gridSize {
+        newRow.append(nil)
+      }
+      
+      newRow.reverse()
+      
+      for col in 0..<gridSize {
+        if grid[row][col]?.value != newRow[col]?.value {
+          moved = true
+        }
+        grid[row][col] = newRow[col]
+        grid[row][col]?.position = (row, col)
+      }
     }
     
-    return false
+    return moved
   }
   
-  private func updateHighestTile() {
-    highestTile = tiles.map { $0.value }.max() ?? 0
+  private func moveUp() -> Bool {
+    var moved = false
+    
+    for col in 0..<gridSize {
+      var newCol: [GameTile?] = []
+      var lastMerged = false
+      
+      for row in 0..<gridSize {
+        if let tile = grid[row][col] {
+          if let lastTile = newCol.last, let last = lastTile, last.value == tile.value && !lastMerged {
+            let mergedTile = GameTile(
+              id: UUID(),
+              value: last.value * 2,
+              position: (newCol.count - 1, col),
+              isNew: false,
+              isMerged: true
+            )
+            newCol[newCol.count - 1] = mergedTile
+            score += mergedTile.value
+            lastMerged = true
+            moved = true
+          } else {
+            var movedTile = tile
+            movedTile.position = (newCol.count, col)
+            movedTile.isMerged = false
+            newCol.append(movedTile)
+            lastMerged = false
+          }
+        }
+      }
+      
+      while newCol.count < gridSize {
+        newCol.append(nil)
+      }
+      
+      for row in 0..<gridSize {
+        if grid[row][col]?.value != newCol[row]?.value {
+          moved = true
+        }
+        grid[row][col] = newCol[row]
+        grid[row][col]?.position = (row, col)
+      }
+    }
+    
+    return moved
+  }
+  
+  private func moveDown() -> Bool {
+    var moved = false
+    
+    for col in 0..<gridSize {
+      var newCol: [GameTile?] = []
+      var lastMerged = false
+      
+      for row in stride(from: gridSize - 1, through: 0, by: -1) {
+        if let tile = grid[row][col] {
+          if let lastTile = newCol.last, let last = lastTile, last.value == tile.value && !lastMerged {
+            let mergedTile = GameTile(
+              id: UUID(),
+              value: last.value * 2,
+              position: (gridSize - newCol.count, col),
+              isNew: false,
+              isMerged: true
+            )
+            newCol[newCol.count - 1] = mergedTile
+            score += mergedTile.value
+            lastMerged = true
+            moved = true
+          } else {
+            var movedTile = tile
+            movedTile.position = (gridSize - 1 - newCol.count, col)
+            movedTile.isMerged = false
+            newCol.append(movedTile)
+            lastMerged = false
+          }
+        }
+      }
+      
+      while newCol.count < gridSize {
+        newCol.append(nil)
+      }
+      
+      newCol.reverse()
+      
+      for row in 0..<gridSize {
+        if grid[row][col]?.value != newCol[row]?.value {
+          moved = true
+        }
+        grid[row][col] = newCol[row]
+        grid[row][col]?.position = (row, col)
+      }
+    }
+    
+    return moved
+  }
+  
+  private func syncTilesFromGrid() {
+    tiles = []
+    for row in 0..<gridSize {
+      for col in 0..<gridSize {
+        if let tile = grid[row][col] {
+          var updatedTile = tile
+          updatedTile.position = (row, col)
+          tiles.append(updatedTile)
+        }
+      }
+    }
+    updateHighestTile()
+  }
+  
+  private func checkGameOver() {
+    // Check if any moves are possible
+    for row in 0..<gridSize {
+      for col in 0..<gridSize {
+        // Empty cell exists
+        if grid[row][col] == nil {
+          return
+        }
+        
+        let current = grid[row][col]!.value
+        
+        // Check right neighbor
+        if col < gridSize - 1, let right = grid[row][col + 1], right.value == current {
+          return
+        }
+        
+        // Check bottom neighbor
+        if row < gridSize - 1, let bottom = grid[row + 1][col], bottom.value == current {
+          return
+        }
+      }
+    }
+    
+    isGameOver = true
   }
 }
 
-// MARK: - 2048 View
+// MARK: - Micro 2048 View
 
 struct Micro2048View: View {
   @Environment(\.themeColors) private var colors
@@ -266,20 +378,17 @@ struct Micro2048View: View {
   @StateObject private var game = Micro2048Game()
   let onComplete: () -> Void
   
-  @State private var dragOffset: CGSize = .zero
   @State private var elapsedTime: TimeInterval = 0
-  @State private var timer: Timer?
+  
+  private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
   
   var showCancelButton: Bool {
-    // Always show in test mode, or after the configured delay in challenge mode
     challenge.isTestMode || elapsedTime >= TimeInterval(appSettings.challengeCancelDelaySeconds)
   }
   
   var body: some View {
-    ZStack {
-      colors.background.ignoresSafeArea()
-      
-      VStack(spacing: 16) {
+    ScrollView {
+      VStack(spacing: 12) {
         // Cancel button
         HStack {
           Spacer()
@@ -298,268 +407,311 @@ struct Micro2048View: View {
         }
         .frame(height: showCancelButton ? nil : 0)
         .opacity(showCancelButton ? 1 : 0)
+        
         // Header
-        VStack(spacing: 12) {
-          Image(systemName: "square.grid.3x3.fill")
-            .font(.system(size: 60))
+        VStack(spacing: 6) {
+          Image(systemName: "square.grid.4x3.fill")
+            .font(.system(size: 50))
             .foregroundStyle(colors.micro2048.gradient)
           
           Text("Micro 2048")
-            .font(.system(size: 32, weight: .bold))
+            .font(.system(size: 28, weight: .bold))
             .foregroundColor(colors.textPrimary)
           
-          Text("Reach 128 to continue")
-            .font(.subheadline)
+          Text("Reach 64 to continue")
+            .font(.system(size: 14))
             .foregroundColor(colors.textSecondary)
         }
-        .padding(.top, 20)
+        .padding(.top, 8)
         
-        // Score
+        // Score display
         HStack(spacing: 20) {
-          VStack(spacing: 4) {
-            Text("SCORE")
-              .font(.caption.bold())
-              .foregroundColor(colors.textSecondary)
-            Text("\(game.score)")
-              .font(.title2.bold())
-              .foregroundColor(colors.textPrimary)
-          }
-          .frame(width: 100)
-          .padding(.vertical, 12)
-          .background(colors.surface)
-          .cornerRadius(8)
-          
-          VStack(spacing: 4) {
-            Text("HIGHEST")
-              .font(.caption.bold())
-              .foregroundColor(colors.textSecondary)
-            Text("\(game.highestTile)")
-              .font(.title2.bold())
-              .foregroundColor(colors.micro2048)
-          }
-          .frame(width: 100)
-          .padding(.vertical, 12)
-          .background(colors.surface)
-          .cornerRadius(8)
-        }
-        
-        // Game Status
-        if game.hasWon {
-          Text("You won! 🎉")
-            .font(.title2.bold())
-            .foregroundColor(colors.success)
-            .padding(.vertical, 4)
-        } else if game.isGameOver {
-          Text("Game Over!")
-            .font(.title2.bold())
-            .foregroundColor(colors.error)
-            .padding(.vertical, 4)
-        } else {
-          Text("Swipe to move tiles")
-            .font(.subheadline)
-            .foregroundColor(colors.textSecondary)
-            .padding(.vertical, 4)
-        }
-        
-        // Game Board
-        GameBoardView(game: game)
-          .gesture(
-            DragGesture(minimumDistance: 20)
-              .onChanged { value in
-                dragOffset = value.translation
-              }
-              .onEnded { value in
-                let direction = getSwipeDirection(from: value.translation)
-                if let direction = direction {
-                  withAnimation(.easeInOut(duration: 0.2)) {
-                    game.move(direction: direction)
-                  }
-                }
-                dragOffset = .zero
-              }
-          )
-          .padding(.bottom, 8)
-        
-        // Action Buttons
-        VStack(spacing: 12) {
-          if game.hasWon {
-            Button(action: {
-              challenge.isCompleted = true
-              DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                onComplete()
-              }
-            }) {
-              Text("Complete!")
-                .font(.headline)
-                .foregroundColor(colors.textOnAccent)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(colors.success)
-                .cornerRadius(12)
-            }
-          }
-          
-          if game.isGameOver || game.hasWon {
-            Button(action: {
-              withAnimation {
-                game.startNewGame()
-              }
-            }) {
-              Text("New Game")
-                .font(.headline)
-                .foregroundColor(colors.textPrimary)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(colors.surface)
-                .cornerRadius(12)
-            }
-          }
+          ScoreBox(title: "SCORE", value: game.score)
+          ScoreBox(title: "HIGHEST", value: game.highestTile)
         }
         .padding(.horizontal, 40)
-        .padding(.bottom, 20)
+        
+        // Status message
+        statusMessage
+          .padding(.vertical, 8)
+        
+        // Game Board - fixed size, no GeometryReader
+        GameBoardSimple(game: game)
+          .padding(.horizontal, 20)
+          .gesture(
+            DragGesture(minimumDistance: 20)
+              .onEnded { value in
+                handleSwipe(value)
+              }
+          )
+        
+        // Action Buttons
+        actionButtons
+          .padding(.top, 20)
       }
+      .padding(.bottom, 40)
     }
+    .scrollDisabled(true)
+    .background(colors.background.ignoresSafeArea())
     .interactiveDismissDisabled(!showCancelButton)
-    .onAppear {
-      startTimer()
-    }
-    .onDisappear {
-      stopTimer()
-    }
-  }
-  
-  private func startTimer() {
-    timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-      Task { @MainActor [weak timer] in
-        guard timer != nil else { return }
-        elapsedTime += 1
-      }
+    .presentationDetents([.large])
+    .presentationDragIndicator(.hidden)
+    .onReceive(timer) { _ in
+      elapsedTime += 1
     }
   }
   
-  private func stopTimer() {
-    timer?.invalidate()
-    timer = nil
-  }
-  
-  private func getSwipeDirection(from translation: CGSize) -> SwipeDirection? {
-    let threshold: CGFloat = 20
-    
-    if abs(translation.width) > abs(translation.height) {
-      // Horizontal swipe
-      if abs(translation.width) > threshold {
-        return translation.width > 0 ? .right : .left
+  @ViewBuilder
+  private var statusMessage: some View {
+    if game.isGameOver {
+      Text("Game Over!")
+        .font(.system(size: 20, weight: .bold))
+        .foregroundColor(colors.error)
+    } else if game.hasReachedTarget {
+      VStack(spacing: 4) {
+        Text("🎉 You reached \(game.targetValue)!")
+          .font(.system(size: 18, weight: .bold))
+          .foregroundColor(colors.success)
+        Text("Keep playing or finish now")
+          .font(.system(size: 14))
+          .foregroundColor(colors.textSecondary)
       }
     } else {
-      // Vertical swipe
-      if abs(translation.height) > threshold {
-        return translation.height > 0 ? .down : .up
+      Text("Swipe to move tiles")
+        .font(.system(size: 16))
+        .foregroundColor(colors.textSecondary)
+    }
+  }
+  
+  @ViewBuilder
+  private var actionButtons: some View {
+    VStack(spacing: 12) {
+      // Finish button - only shows when target reached
+      if game.hasReachedTarget && !game.isGameOver {
+        Button(action: {
+          challenge.isCompleted = true
+          DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            onComplete()
+          }
+        }) {
+          Text("Finish Challenge")
+            .font(.headline)
+            .foregroundColor(colors.textOnAccent)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(colors.success)
+            .cornerRadius(12)
+        }
+        .padding(.horizontal, 40)
+      }
+      
+      // Game Over - New Game button
+      if game.isGameOver {
+        Button(action: {
+          game.reset()
+        }) {
+          Text("New Game")
+            .font(.headline)
+            .foregroundColor(colors.textOnAccent)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(colors.micro2048)
+            .cornerRadius(12)
+        }
+        .padding(.horizontal, 40)
       }
     }
+  }
+  
+  private func handleSwipe(_ value: DragGesture.Value) {
+    let horizontal = value.translation.width
+    let vertical = value.translation.height
     
-    return nil
+    if abs(horizontal) > abs(vertical) {
+      if horizontal > 0 {
+        game.move(.right)
+      } else {
+        game.move(.left)
+      }
+    } else {
+      if vertical > 0 {
+        game.move(.down)
+      } else {
+        game.move(.up)
+      }
+    }
   }
 }
 
-// MARK: - Game Board View
+// MARK: - Score Box
 
-struct GameBoardView: View {
+struct ScoreBox: View {
+  @Environment(\.themeColors) private var colors
+  let title: String
+  let value: Int
+  
+  var body: some View {
+    VStack(spacing: 4) {
+      Text(title)
+        .font(.system(size: 12, weight: .bold))
+        .foregroundColor(colors.textSecondary)
+      
+      Text("\(value)")
+        .font(.system(size: 24, weight: .bold, design: .rounded))
+        .foregroundColor(colors.textPrimary)
+    }
+    .frame(maxWidth: .infinity)
+    .padding(.vertical, 10)
+    .background(colors.surface)
+    .cornerRadius(8)
+  }
+}
+
+// MARK: - Simple Game Board (No GeometryReader)
+
+struct GameBoardSimple: View {
   @Environment(\.themeColors) private var colors
   @ObservedObject var game: Micro2048Game
   
+  // Fixed dimensions that work well on most devices
+  private let cellSize: CGFloat = 70
+  private let spacing: CGFloat = 8
+  
+  private var boardSize: CGFloat {
+    cellSize * 4 + spacing * 5
+  }
+  
   var body: some View {
-    GeometryReader { geometry in
-      let spacing: CGFloat = 8
-      let totalSpacing = spacing * CGFloat(game.gridSize + 1)
-      let availableSize = min(geometry.size.width, geometry.size.height) - totalSpacing
-      let tileSize = availableSize / CGFloat(game.gridSize)
+    ZStack {
+      // Background
+      RoundedRectangle(cornerRadius: 12)
+        .fill(colors.surfaceElevated)
       
-      ZStack {
-        // Background grid
-        VStack(spacing: spacing) {
-          ForEach(0..<game.gridSize, id: \.self) { row in
-            HStack(spacing: spacing) {
-              ForEach(0..<game.gridSize, id: \.self) { col in
-                RoundedRectangle(cornerRadius: 8)
-                  .fill(colors.surface.opacity(0.5))
-                  .frame(width: tileSize, height: tileSize)
-              }
+      // Grid of empty cells
+      VStack(spacing: spacing) {
+        ForEach(0..<4, id: \.self) { row in
+          HStack(spacing: spacing) {
+            ForEach(0..<4, id: \.self) { col in
+              RoundedRectangle(cornerRadius: 8)
+                .fill(colors.surface.opacity(0.5))
+                .frame(width: cellSize, height: cellSize)
             }
           }
         }
-        .padding(spacing)
-        
-        // Tiles
-        ForEach(game.tiles) { tile in
-          TileView(tile: tile, size: tileSize)
-            .position(
-              x: spacing + CGFloat(tile.position.col) * (tileSize + spacing) + tileSize / 2,
-              y: spacing + CGFloat(tile.position.row) * (tileSize + spacing) + tileSize / 2
-            )
-            .animation(.spring(response: 0.2, dampingFraction: 0.8), value: tile.position)
-            .scaleEffect(tile.isNew ? 1.0 : (tile.isMerged ? 1.1 : 1.0))
-            .animation(.spring(response: 0.2, dampingFraction: 0.6), value: tile.isNew)
-            .animation(.spring(response: 0.2, dampingFraction: 0.6), value: tile.isMerged)
-        }
       }
-      .background(colors.surface.opacity(0.3))
-      .cornerRadius(12)
+      .padding(spacing)
+      
+      // Tiles overlay
+      ForEach(game.tiles) { tile in
+        TileView2048(
+          value: tile.value,
+          size: cellSize,
+          isMerged: tile.isMerged,
+          isNew: tile.isNew
+        )
+        .position(positionFor(tile))
+      }
     }
-    .aspectRatio(1, contentMode: .fit)
-    .padding(.horizontal, 20)
+    .frame(width: boardSize, height: boardSize)
+  }
+  
+  private func positionFor(_ tile: GameTile) -> CGPoint {
+    let x = spacing + CGFloat(tile.position.col) * (cellSize + spacing) + cellSize / 2
+    let y = spacing + CGFloat(tile.position.row) * (cellSize + spacing) + cellSize / 2
+    return CGPoint(x: x, y: y)
   }
 }
 
 // MARK: - Tile View
 
-struct TileView: View {
+struct TileView2048: View {
   @Environment(\.themeColors) private var colors
-  let tile: Tile
+  let value: Int
   let size: CGFloat
+  let isMerged: Bool
+  let isNew: Bool
+  
+  @State private var appeared = false
+  
+  private var safeSize: CGFloat {
+    max(20, size)
+  }
+  
+  private var backgroundColor: Color {
+    switch value {
+    case 2:
+      return Color(red: 238/255, green: 228/255, blue: 218/255)
+    case 4:
+      return Color(red: 237/255, green: 224/255, blue: 200/255)
+    case 8:
+      return Color(red: 242/255, green: 177/255, blue: 121/255)
+    case 16:
+      return Color(red: 245/255, green: 149/255, blue: 99/255)
+    case 32:
+      return Color(red: 246/255, green: 124/255, blue: 95/255)
+    case 64:
+      return Color(red: 246/255, green: 94/255, blue: 59/255)
+    case 128:
+      return Color(red: 237/255, green: 207/255, blue: 114/255)
+    case 256:
+      return Color(red: 237/255, green: 204/255, blue: 97/255)
+    case 512:
+      return Color(red: 237/255, green: 200/255, blue: 80/255)
+    case 1024:
+      return Color(red: 237/255, green: 197/255, blue: 63/255)
+    case 2048:
+      return Color(red: 237/255, green: 194/255, blue: 46/255)
+    default:
+      return Color(red: 60/255, green: 58/255, blue: 50/255)
+    }
+  }
+  
+  private var textColor: Color {
+    value <= 4 ? Color(red: 119/255, green: 110/255, blue: 101/255) : .white
+  }
+  
+  private var fontSize: CGFloat {
+    let base = safeSize
+    if value >= 1000 {
+      return base * 0.28
+    } else if value >= 100 {
+      return base * 0.35
+    } else {
+      return base * 0.42
+    }
+  }
+  
+  private var scale: CGFloat {
+    if isMerged {
+      return 1.1
+    } else if isNew && !appeared {
+      return 0.1
+    } else {
+      return 1.0
+    }
+  }
   
   var body: some View {
     ZStack {
       RoundedRectangle(cornerRadius: 8)
-        .fill(tileColor(for: tile.value))
+        .fill(backgroundColor)
+        .frame(width: safeSize, height: safeSize)
       
-      Text("\(tile.value)")
-        .font(.system(size: fontSize(for: tile.value), weight: .bold, design: .rounded))
-        .foregroundColor(textColor(for: tile.value))
+      Text("\(value)")
+        .font(.system(size: max(10, fontSize), weight: .bold, design: .rounded))
+        .foregroundColor(textColor)
     }
-    .frame(width: size, height: size)
-  }
-  
-  private func textColor(for value: Int) -> Color {
-    // Use dark color for light tiles (2, 4), white for darker tiles
-    switch value {
-    case 2, 4:
-      return Color(red: 30/255, green: 25/255, blue: 22/255) // Dark brown
-    default:
-      return .white
+    .scaleEffect(scale)
+    .animation(.interpolatingSpring(stiffness: 200, damping: 15), value: scale)
+    .onAppear {
+      if isNew {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+          appeared = true
+        }
+      } else {
+        appeared = true
+      }
     }
-  }
-  
-  private func tileColor(for value: Int) -> Color {
-    switch value {
-    case 2: return Color(red: 0.93, green: 0.89, blue: 0.85)
-    case 4: return Color(red: 0.93, green: 0.88, blue: 0.78)
-    case 8: return Color(red: 0.95, green: 0.69, blue: 0.47)
-    case 16: return Color(red: 0.96, green: 0.58, blue: 0.39)
-    case 32: return Color(red: 0.97, green: 0.49, blue: 0.37)
-    case 64: return Color(red: 0.97, green: 0.37, blue: 0.23)
-    case 128: return Color(red: 0.93, green: 0.81, blue: 0.45)
-    default: return colors.micro2048
-    }
-  }
-  
-  private func fontSize(for value: Int) -> CGFloat {
-    let baseSize = size * 0.4
-    if value >= 100 {
-      return baseSize * 0.8
-    } else if value >= 1000 {
-      return baseSize * 0.6
-    }
-    return baseSize
   }
 }
 
@@ -567,5 +719,5 @@ struct TileView: View {
 
 #Preview {
   Micro2048View(challenge: Micro2048Challenge(), onComplete: {})
+    .environmentObject(AppSettings())
 }
-

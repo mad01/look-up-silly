@@ -1,6 +1,26 @@
 import Foundation
 import Combine
 
+/// Represents a single challenge completion event with timestamp
+struct ChallengeCompletionEvent: Codable, Identifiable {
+  let id: UUID
+  let date: Date
+  let type: String
+  
+  init(type: ChallengeType) {
+    self.id = UUID()
+    self.date = Date()
+    self.type = type.rawValue
+  }
+}
+
+/// Data point for the line chart
+struct ChartDataPoint: Identifiable {
+  let id = UUID()
+  let date: Date
+  let cumulativeCount: Int
+}
+
 /// Manages challenge statistics with iCloud sync
 /// Uses NSUbiquitousKeyValueStore for simple key-value iCloud storage
 /// Works in both simulator and device
@@ -15,6 +35,7 @@ class ChallengeStatsManager: ObservableObject {
   @Published var ticTacToeChallengesCompleted: Int = 0
   @Published var micro2048ChallengesCompleted: Int = 0
   @Published var lastSyncDate: Date?
+  @Published var completionEvents: [ChallengeCompletionEvent] = []
   
   // MARK: - Storage Keys
   
@@ -24,6 +45,7 @@ class ChallengeStatsManager: ObservableObject {
     static let ticTacToeChallenges = "ticTacToeChallengesCompleted"
     static let micro2048Challenges = "micro2048ChallengesCompleted"
     static let lastSync = "lastSyncDate"
+    static let completionEvents = "completionEvents"
   }
   
   // MARK: - Storage
@@ -68,7 +90,17 @@ class ChallengeStatsManager: ObservableObject {
         lastSyncDate = Date(timeIntervalSince1970: syncTimestamp)
       }
       
-      print("📊 Stats loaded from iCloud: \(totalChallengesCompleted) total challenges")
+      // Load completion events from iCloud
+      if let eventsData = cloudStore.data(forKey: Keys.completionEvents) {
+        do {
+          completionEvents = try JSONDecoder().decode([ChallengeCompletionEvent].self, from: eventsData)
+        } catch {
+          print("📊 Failed to decode completion events from iCloud: \(error)")
+          completionEvents = []
+        }
+      }
+      
+      print("📊 Stats loaded from iCloud: \(totalChallengesCompleted) total challenges, \(completionEvents.count) events")
     } else {
       // Load from local storage (fallback)
       totalChallengesCompleted = localStore.integer(forKey: Keys.totalChallenges)
@@ -80,7 +112,17 @@ class ChallengeStatsManager: ObservableObject {
         lastSyncDate = Date(timeIntervalSince1970: syncTimestamp)
       }
       
-      print("📊 Stats loaded from local storage: \(totalChallengesCompleted) total challenges")
+      // Load completion events from local storage
+      if let eventsData = localStore.data(forKey: Keys.completionEvents) {
+        do {
+          completionEvents = try JSONDecoder().decode([ChallengeCompletionEvent].self, from: eventsData)
+        } catch {
+          print("📊 Failed to decode completion events from local: \(error)")
+          completionEvents = []
+        }
+      }
+      
+      print("📊 Stats loaded from local storage: \(totalChallengesCompleted) total challenges, \(completionEvents.count) events")
     }
   }
   
@@ -89,12 +131,24 @@ class ChallengeStatsManager: ObservableObject {
   private func saveStats() {
     let timestamp = Date().timeIntervalSince1970
     
+    // Encode completion events
+    let eventsData: Data?
+    do {
+      eventsData = try JSONEncoder().encode(completionEvents)
+    } catch {
+      print("📊 Failed to encode completion events: \(error)")
+      eventsData = nil
+    }
+    
     // Save to iCloud
     cloudStore.set(Int64(totalChallengesCompleted), forKey: Keys.totalChallenges)
     cloudStore.set(Int64(mathChallengesCompleted), forKey: Keys.mathChallenges)
     cloudStore.set(Int64(ticTacToeChallengesCompleted), forKey: Keys.ticTacToeChallenges)
     cloudStore.set(Int64(micro2048ChallengesCompleted), forKey: Keys.micro2048Challenges)
     cloudStore.set(timestamp, forKey: Keys.lastSync)
+    if let eventsData = eventsData {
+      cloudStore.set(eventsData, forKey: Keys.completionEvents)
+    }
     cloudStore.synchronize()
     
     // Also save locally as backup
@@ -103,10 +157,13 @@ class ChallengeStatsManager: ObservableObject {
     localStore.set(ticTacToeChallengesCompleted, forKey: Keys.ticTacToeChallenges)
     localStore.set(micro2048ChallengesCompleted, forKey: Keys.micro2048Challenges)
     localStore.set(timestamp, forKey: Keys.lastSync)
+    if let eventsData = eventsData {
+      localStore.set(eventsData, forKey: Keys.completionEvents)
+    }
     
     lastSyncDate = Date()
     
-    print("📊 Stats saved: \(totalChallengesCompleted) total challenges")
+    print("📊 Stats saved: \(totalChallengesCompleted) total challenges, \(completionEvents.count) events")
   }
   
   // MARK: - iCloud Sync Handler
@@ -139,6 +196,10 @@ class ChallengeStatsManager: ObservableObject {
       micro2048ChallengesCompleted += 1
     }
     
+    // Add completion event with timestamp
+    let event = ChallengeCompletionEvent(type: type)
+    completionEvents.append(event)
+    
     saveStats()
     
     print("📊 Challenge completed! Total: \(totalChallengesCompleted)")
@@ -167,6 +228,7 @@ class ChallengeStatsManager: ObservableObject {
     ticTacToeChallengesCompleted = 0
     micro2048ChallengesCompleted = 0
     lastSyncDate = nil
+    completionEvents = []
     
     // Clear iCloud
     cloudStore.removeObject(forKey: Keys.totalChallenges)
@@ -174,6 +236,7 @@ class ChallengeStatsManager: ObservableObject {
     cloudStore.removeObject(forKey: Keys.ticTacToeChallenges)
     cloudStore.removeObject(forKey: Keys.micro2048Challenges)
     cloudStore.removeObject(forKey: Keys.lastSync)
+    cloudStore.removeObject(forKey: Keys.completionEvents)
     cloudStore.synchronize()
     
     // Clear local
@@ -182,8 +245,58 @@ class ChallengeStatsManager: ObservableObject {
     localStore.removeObject(forKey: Keys.ticTacToeChallenges)
     localStore.removeObject(forKey: Keys.micro2048Challenges)
     localStore.removeObject(forKey: Keys.lastSync)
+    localStore.removeObject(forKey: Keys.completionEvents)
     
     print("📊 Stats reset")
+  }
+  
+  /// Get chart data points for the line chart (cumulative over time)
+  func getChartDataPoints(for days: Int = 7) -> [ChartDataPoint] {
+    let calendar = Calendar.current
+    let now = Date()
+    let startDate = calendar.date(byAdding: .day, value: -(days - 1), to: calendar.startOfDay(for: now))!
+    
+    // Sort events by date
+    let sortedEvents = completionEvents.sorted { $0.date < $1.date }
+    
+    // Generate data points for each day
+    var dataPoints: [ChartDataPoint] = []
+    var cumulativeCount = 0
+    
+    // Count events before the start date
+    for event in sortedEvents {
+      if event.date < startDate {
+        cumulativeCount += 1
+      }
+    }
+    
+    // Generate points for each day in the range
+    for dayOffset in 0..<days {
+      guard let dayStart = calendar.date(byAdding: .day, value: dayOffset, to: startDate),
+            let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else {
+        continue
+      }
+      
+      // Count events for this day
+      let eventsThisDay = sortedEvents.filter { $0.date >= dayStart && $0.date < dayEnd }
+      cumulativeCount += eventsThisDay.count
+      
+      // Use middle of the day for the data point
+      let midDay = calendar.date(byAdding: .hour, value: 12, to: dayStart) ?? dayStart
+      dataPoints.append(ChartDataPoint(date: midDay, cumulativeCount: cumulativeCount))
+    }
+    
+    // If no events, ensure we have at least start and end points at 0
+    if dataPoints.isEmpty {
+      let midStart = calendar.date(byAdding: .hour, value: 12, to: startDate) ?? startDate
+      let midEnd = calendar.date(byAdding: .hour, value: 12, to: now) ?? now
+      return [
+        ChartDataPoint(date: midStart, cumulativeCount: 0),
+        ChartDataPoint(date: midEnd, cumulativeCount: 0)
+      ]
+    }
+    
+    return dataPoints
   }
   
   /// Force sync with iCloud

@@ -102,129 +102,129 @@ struct MathChallengeView: View {
   @FocusState private var isInputFocused: Bool
   
   @State private var elapsedTime: TimeInterval = 0
-  @State private var timer: Timer?
+  
+  private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
   
   var showCancelButton: Bool {
-    // Always show in test mode, or after the configured delay in challenge mode
     challenge.isTestMode || elapsedTime >= TimeInterval(appSettings.challengeCancelDelaySeconds)
   }
   
   var body: some View {
-    ZStack {
-      colors.background.ignoresSafeArea()
-      
-      ScrollView {
-        VStack(spacing: 24) {
-          // Cancel button
-          HStack {
-            Spacer()
-            if showCancelButton {
-              Button(action: {
-                dismiss()
-              }) {
-                Image(systemName: "xmark.circle.fill")
-                  .font(.system(size: 28))
-                  .foregroundColor(colors.textSecondary)
-              }
-              .padding(.trailing, 20)
-              .padding(.top, 20)
-              .transition(.opacity)
-            }
-          }
-          .frame(height: showCancelButton ? nil : 0)
-          .opacity(showCancelButton ? 1 : 0)
-          
-          // Header
-          VStack(spacing: 12) {
-            Image(systemName: "function")
-              .font(.system(size: 50))
-              .foregroundStyle(colors.mathChallenge.gradient)
-            
-            Text("Math Challenge")
-              .font(.system(size: 28, weight: .bold))
-              .foregroundColor(colors.textPrimary)
-            
-            Text("Solve 5 problems to continue")
-              .font(.subheadline)
-              .foregroundColor(colors.textSecondary)
-          }
-          .padding(.top, 40)
-          
-          // Progress
-          HStack(spacing: 8) {
-            ForEach(0..<5) { index in
-              Circle()
-                .fill(index < challenge.currentProblemIndex ? colors.success : 
-                      index == challenge.currentProblemIndex ? colors.mathChallenge : colors.textDisabled)
-                .frame(width: 12, height: 12)
-            }
-          }
-          .padding(.vertical, 8)
-          
-          // Current Problem
-          if challenge.currentProblemIndex < challenge.problems.count {
-            VStack(spacing: 24) {
-              Text("Problem \(challenge.currentProblemIndex + 1) of 5")
-                .font(.headline)
-                .foregroundColor(colors.textSecondary)
-              
-              Text(challenge.problems[challenge.currentProblemIndex].question)
-                .font(.system(size: 48, weight: .bold, design: .rounded))
-                .foregroundColor(colors.textPrimary)
-                .padding(.vertical, 8)
-              
-              TextField("Your answer", text: $challenge.userAnswer)
-                .keyboardType(.numberPad)
-                .font(.system(size: 32, weight: .semibold))
-                .multilineTextAlignment(.center)
-                .foregroundColor(colors.textPrimary)
-                .padding()
-                .background(colors.surface)
-                .cornerRadius(12)
-                .focused($isInputFocused)
-                .overlay(
-                  RoundedRectangle(cornerRadius: 12)
-                    .stroke(challenge.showError ? colors.error : Color.clear, lineWidth: 2)
-                )
-                .padding(.horizontal, 40)
-              
-              if challenge.showError {
-                Text("Incorrect! Try again")
-                  .foregroundColor(colors.error)
-                  .font(.headline)
-              }
-              
-              Button(action: {
-                challenge.checkAnswer()
-              }) {
-                Text("Submit")
-                  .font(.headline)
-                  .foregroundColor(colors.textOnAccent)
-                  .frame(maxWidth: .infinity)
-                  .padding()
-                  .background(challenge.userAnswer.isEmpty ? colors.textDisabled : colors.mathChallenge)
-                  .cornerRadius(12)
-              }
-              .disabled(challenge.userAnswer.isEmpty)
-              .padding(.horizontal, 40)
-            }
-          }
-          
-          // Bottom spacer to ensure content is scrollable above keyboard
+    ScrollView {
+      VStack(spacing: 16) {
+        // Cancel button
+        HStack {
           Spacer()
-            .frame(height: 100)
+          if showCancelButton {
+            Button(action: {
+              dismiss()
+            }) {
+              Image(systemName: "xmark.circle.fill")
+                .font(.system(size: 28))
+                .foregroundColor(colors.textSecondary)
+            }
+            .padding(.trailing, 20)
+            .padding(.top, 20)
+            .transition(.opacity)
+          }
         }
-        .frame(maxWidth: .infinity)
+        .frame(height: showCancelButton ? nil : 0)
+        .opacity(showCancelButton ? 1 : 0)
+        
+        // Header
+        VStack(spacing: 8) {
+          Image(systemName: "function")
+            .font(.system(size: 50))
+            .foregroundStyle(colors.mathChallenge.gradient)
+          
+          Text("Math Challenge")
+            .font(.system(size: 28, weight: .bold))
+            .foregroundColor(colors.textPrimary)
+          
+          Text("Solve 5 problems to continue")
+            .font(.system(size: 14))
+            .foregroundColor(colors.textSecondary)
+        }
+        .padding(.top, 20)
+        
+        // Progress
+        HStack(spacing: 8) {
+          ForEach(0..<5, id: \.self) { index in
+            Circle()
+              .fill(index < challenge.currentProblemIndex ? colors.success : 
+                    index == challenge.currentProblemIndex ? colors.mathChallenge : colors.textDisabled)
+              .frame(width: 12, height: 12)
+          }
+        }
+        .padding(.vertical, 8)
+        
+        // Current Problem
+        if challenge.currentProblemIndex < challenge.problems.count {
+          VStack(spacing: 16) {
+            Text("Problem \(challenge.currentProblemIndex + 1) of 5")
+              .font(.system(size: 17, weight: .semibold))
+              .foregroundColor(colors.textSecondary)
+            
+            Text(challenge.problems[challenge.currentProblemIndex].question)
+              .font(.system(size: 48, weight: .bold, design: .rounded))
+              .foregroundColor(colors.textPrimary)
+              .padding(.vertical, 8)
+              .minimumScaleFactor(0.5)
+              .lineLimit(1)
+            
+            TextField("Your answer", text: $challenge.userAnswer)
+              .keyboardType(.numberPad)
+              .font(.system(size: 32, weight: .semibold))
+              .multilineTextAlignment(.center)
+              .foregroundColor(colors.textPrimary)
+              .padding()
+              .background(colors.surface)
+              .cornerRadius(12)
+              .focused($isInputFocused)
+              .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                  .stroke(challenge.showError ? colors.error : Color.clear, lineWidth: 2)
+              )
+              .padding(.horizontal, 40)
+            
+            if challenge.showError {
+              Text("Incorrect! Try again")
+                .foregroundColor(colors.error)
+                .font(.system(size: 17, weight: .semibold))
+            }
+            
+            Button(action: {
+              challenge.checkAnswer()
+            }) {
+              Text("Submit")
+                .font(.headline)
+                .foregroundColor(colors.textOnAccent)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(challenge.userAnswer.isEmpty ? colors.textDisabled : colors.mathChallenge)
+                .cornerRadius(12)
+            }
+            .disabled(challenge.userAnswer.isEmpty)
+            .padding(.horizontal, 40)
+          }
+        }
+        
+        // Bottom spacer to ensure content is scrollable above keyboard
+        Spacer()
+          .frame(height: 100)
       }
-      .scrollDismissesKeyboard(.interactively)
+      .frame(maxWidth: .infinity)
     }
+    .scrollDismissesKeyboard(.interactively)
+    .background(colors.background.ignoresSafeArea())
     .interactiveDismissDisabled(!showCancelButton)
+    .presentationDetents([.large])
+    .presentationDragIndicator(.hidden)
     .onAppear {
       isInputFocused = true
-      startTimer()
     }
-    .onDisappear {
-      stopTimer()
+    .onReceive(timer) { _ in
+      elapsedTime += 1
     }
     .onChange(of: challenge.isCompleted) { _, completed in
       if completed {
@@ -233,20 +233,6 @@ struct MathChallengeView: View {
         }
       }
     }
-  }
-  
-  private func startTimer() {
-    timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-      Task { @MainActor [weak timer] in
-        guard timer != nil else { return }
-        elapsedTime += 1
-      }
-    }
-  }
-  
-  private func stopTimer() {
-    timer?.invalidate()
-    timer = nil
   }
 }
 

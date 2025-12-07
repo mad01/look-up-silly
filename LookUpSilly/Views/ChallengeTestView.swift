@@ -109,7 +109,7 @@ struct ChallengeTestView: View {
           .foregroundColor(colors.primary)
         }
       }
-      .sheet(isPresented: $showingChallenge) {
+      .fullScreenCover(isPresented: $showingChallenge) {
         if let challenge = currentChallenge {
           ChallengeSheetView(challenge: challenge) {
             showingChallenge = false

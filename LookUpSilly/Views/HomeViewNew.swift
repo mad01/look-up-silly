@@ -1,5 +1,6 @@
 import SwiftUI
 import FamilyControls
+import Charts
 
 struct HomeViewNew: View {
   @Environment(\.themeColors) private var colors
@@ -25,34 +26,8 @@ struct HomeViewNew: View {
                 .font(.system(size: 32, weight: .bold, design: .rounded))
                 .foregroundColor(colors.textPrimary)
               
-              // Prominent Stats Counter
-              VStack(spacing: 8) {
-                HStack(spacing: 4) {
-                  Image(systemName: "checkmark.shield.fill")
-                    .font(.title2)
-                    .foregroundColor(colors.success)
-                  
-                  Text("\(statsManager.totalChallengesCompleted)")
-                    .font(.system(size: 36, weight: .bold, design: .rounded))
-                    .foregroundColor(colors.success)
-                    .contentTransition(.numericText())
-                  
-                  Text("Times Saved")
-                    .font(.title3.bold())
-                    .foregroundColor(colors.textPrimary)
-                }
-                
-                Text("Challenges completed to stay focused")
-                  .font(.caption)
-                  .foregroundColor(colors.textSecondary)
-              }
-              .padding()
-              .background(colors.success.opacity(0.15))
-              .cornerRadius(12)
-              .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                  .stroke(colors.success.opacity(0.3), lineWidth: 1)
-              )
+              // Times Saved Chart
+              TimesSavedChartView(statsManager: statsManager)
             }
             .padding(.top, 40)
             .padding(.horizontal, 20)
@@ -110,6 +85,110 @@ struct HomeViewNew: View {
         ChallengeTestView(isDevelopment: false)
       }
     }
+  }
+}
+
+struct TimesSavedChartView: View {
+  @Environment(\.themeColors) private var colors
+  @ObservedObject var statsManager: ChallengeStatsManager
+  
+  private var chartData: [ChartDataPoint] {
+    statsManager.getChartDataPoints(for: 7)
+  }
+  
+  private var maxY: Int {
+    max(chartData.map { $0.cumulativeCount }.max() ?? 0, 5)
+  }
+  
+  var body: some View {
+    VStack(spacing: 12) {
+      // Header with total count
+      HStack {
+        VStack(alignment: .leading, spacing: 4) {
+          HStack(spacing: 6) {
+            Image(systemName: "checkmark.shield.fill")
+              .font(.title3)
+              .foregroundColor(colors.success)
+            
+            Text("\(statsManager.totalChallengesCompleted)")
+              .font(.system(size: 28, weight: .bold, design: .rounded))
+              .foregroundColor(colors.success)
+              .contentTransition(.numericText())
+            
+            Text(NSLocalizedString("home.times_saved", comment: ""))
+              .font(.headline)
+              .foregroundColor(colors.textPrimary)
+          }
+          
+          Text(NSLocalizedString("home.times_saved_subtitle", comment: ""))
+            .font(.caption)
+            .foregroundColor(colors.textSecondary)
+        }
+        
+        Spacer()
+      }
+      
+      // Line Chart
+      Chart(chartData) { point in
+        LineMark(
+          x: .value("Date", point.date),
+          y: .value("Times Saved", point.cumulativeCount)
+        )
+        .foregroundStyle(colors.success.gradient)
+        .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+        .interpolationMethod(.monotone)
+        
+        AreaMark(
+          x: .value("Date", point.date),
+          y: .value("Times Saved", point.cumulativeCount)
+        )
+        .foregroundStyle(
+          LinearGradient(
+            colors: [colors.success.opacity(0.3), colors.success.opacity(0.05)],
+            startPoint: .top,
+            endPoint: .bottom
+          )
+        )
+        .interpolationMethod(.monotone)
+        
+        PointMark(
+          x: .value("Date", point.date),
+          y: .value("Times Saved", point.cumulativeCount)
+        )
+        .foregroundStyle(colors.success)
+        .symbolSize(30)
+      }
+      .chartYScale(domain: 0...maxY)
+      .chartXAxis {
+        AxisMarks(values: .stride(by: .day, count: 2)) { value in
+          AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+            .foregroundStyle(colors.textSecondary.opacity(0.2))
+          AxisValueLabel(format: .dateTime.weekday(.abbreviated))
+            .foregroundStyle(colors.textSecondary)
+        }
+      }
+      .chartYAxis {
+        AxisMarks(position: .leading, values: .automatic(desiredCount: 4)) { value in
+          AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+            .foregroundStyle(colors.textSecondary.opacity(0.2))
+          AxisValueLabel()
+            .foregroundStyle(colors.textSecondary)
+        }
+      }
+      .frame(height: 140)
+      
+      // Footer label
+      Text(NSLocalizedString("home.last_7_days", comment: ""))
+        .font(.caption2)
+        .foregroundColor(colors.textSecondary)
+    }
+    .padding()
+    .background(colors.success.opacity(0.15))
+    .cornerRadius(12)
+    .overlay(
+      RoundedRectangle(cornerRadius: 12)
+        .stroke(colors.success.opacity(0.3), lineWidth: 1)
+    )
   }
 }
 
