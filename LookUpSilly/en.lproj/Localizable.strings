@@ -29,8 +29,30 @@
 "settings.allowed_apps" = "Allowed Apps";
 "settings.reset" = "Reset Onboarding";
 "settings.pause_challenges" = "Pause Challenges";
+"settings.manage_pause" = "Manage Pause";
+"settings.resume_challenges" = "Resume Challenges";
 "settings.challenges_paused" = "Challenges are paused";
 "settings.challenges_active" = "Challenges are active";
+
+/* Pause Duration */
+"pause.title" = "Pause Challenges";
+"pause.active_title" = "Pause Active";
+"pause.subtitle" = "How long do you need a break?";
+"pause.remaining" = "remaining";
+"pause.5min" = "5 Minutes";
+"pause.10min" = "10 Minutes";
+"pause.15min" = "15 Minutes";
+"pause.add_5min" = "Add 5 Minutes";
+"pause.add_10min" = "Add 10 Minutes";
+"pause.add_15min" = "Add 15 Minutes";
+"pause.quick_break" = "Quick break";
+"pause.short_pause" = "Short pause";
+"pause.extended_break" = "Extended break";
+"pause.extend_break" = "Extend your break";
+"pause.cancel" = "Cancel";
+"pause.resume_now" = "Resume Challenges Now";
+"pause.auto_resume" = "Auto-resumes %@";
+"pause.indefinite" = "Paused indefinitely";
 
 /* Challenges */
 "challenge.math.title" = "Math Challenge";

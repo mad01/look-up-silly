@@ -11,6 +11,7 @@ struct SettingsViewNew: View {
   @State private var showingResetStatsAlert = false
   @State private var showingContributionSheet = false
   @State private var showingTestChallenges = false
+  @State private var showingPauseDurationSheet = false
   
   var body: some View {
     NavigationStack {
@@ -55,23 +56,37 @@ struct SettingsViewNew: View {
           .listRowBackground(colors.surface)
           
           Section {
-            Toggle(isOn: $appSettings.challengesPaused) {
+            Button(action: {
+              showingPauseDurationSheet = true
+            }) {
               HStack {
-                Image(systemName: "pause.circle.fill")
+                Image(systemName: appSettings.challengesPaused ? "clock.fill" : "pause.circle.fill")
                   .foregroundColor(appSettings.challengesPaused ? colors.warning : colors.primary)
                   .font(.system(size: 24))
                 VStack(alignment: .leading, spacing: 4) {
-                  Text("Pause Challenges")
+                  Text(appSettings.challengesPaused ? "Manage Pause" : "Pause Challenges")
                     .foregroundColor(colors.textPrimary)
                     .font(.headline)
-                  Text(appSettings.challengesPaused ? "All apps open freely - challenges paused" : "Challenges are active")
-                    .font(.caption)
-                    .foregroundColor(colors.textSecondary)
+                  if appSettings.challengesPaused {
+                    if let endTime = UserDefaults.standard.object(forKey: "pauseEndTime") as? Date {
+                      Text("Auto-resumes \(endTime, style: .relative)")
+                        .font(.caption)
+                        .foregroundColor(colors.textSecondary)
+                    } else {
+                      Text("Paused indefinitely")
+                        .font(.caption)
+                        .foregroundColor(colors.textSecondary)
+                    }
+                  } else {
+                    Text("Challenges are active")
+                      .font(.caption)
+                      .foregroundColor(colors.textSecondary)
+                  }
                 }
+                Spacer()
+                Image(systemName: "chevron.right")
+                  .foregroundColor(colors.textSecondary)
               }
-            }
-            .onChange(of: appSettings.challengesPaused) { _, isPaused in
-              handlePauseStateChange(isPaused)
             }
             .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ChallengesPausedStateChanged"))) { _ in
               // Update shields when state changes from quick action
@@ -329,6 +344,13 @@ struct SettingsViewNew: View {
       }
       .sheet(isPresented: $showingTestChallenges) {
         ChallengeTestView(isDevelopment: true)
+      }
+      .overlay {
+        if showingPauseDurationSheet {
+          PauseDurationSheet(isPresented: $showingPauseDurationSheet)
+            .environmentObject(appSettings)
+            .transition(.opacity)
+        }
       }
       .alert("Reset App?", isPresented: $showingResetAlert) {
         Button("Cancel", role: .cancel) {}

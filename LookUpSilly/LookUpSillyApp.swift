@@ -7,6 +7,7 @@ struct LookUpSillyApp: App {
   @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
   @StateObject private var appSettings = AppSettings()
   @State private var isReady = false
+  @State private var showPauseDurationSheet = false
   @Environment(\.scenePhase) private var scenePhase
   
   init() {
@@ -23,18 +24,31 @@ struct LookUpSillyApp: App {
   var body: some Scene {
     WindowGroup {
       Group {
-        if isReady {
-          ContentView()
-            .environmentObject(appSettings)
-            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("UpdateQuickActions"))) { _ in
-              appDelegate.updateQuickActions()
-            }
-            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ChallengesPausedStateChanged"))) { _ in
-              // Reload app settings when pause state changes from quick action
-              appSettings.objectWillChange.send()
-            }
-        } else {
-          StartupView()
+        ZStack {
+          if isReady {
+            ContentView()
+              .environmentObject(appSettings)
+              .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("UpdateQuickActions"))) { _ in
+                appDelegate.updateQuickActions()
+              }
+              .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ShowPauseDurationSheet"))) { _ in
+                showPauseDurationSheet = true
+              }
+              .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ChallengesPausedStateChanged"))) { _ in
+                // Reload app settings when pause state changes from quick action
+                appSettings.objectWillChange.send()
+              }
+          } else {
+            StartupView()
+          }
+          
+          // Floating pause duration overlay
+          if showPauseDurationSheet {
+            PauseDurationSheet(isPresented: $showPauseDurationSheet)
+              .environmentObject(appSettings)
+              .transition(.opacity)
+              .zIndex(1000)
+          }
         }
       }
       .environment(\.themeColors, ThemeColors())
@@ -47,12 +61,30 @@ struct LookUpSillyApp: App {
         }
         // Update quick actions after app is ready
         appDelegate.updateQuickActions()
+        
+        // Check if pause has expired on launch
+        checkPauseExpiration()
       }
       .onChange(of: scenePhase) { oldPhase, newPhase in
         if newPhase == .active {
           // Update quick actions when app becomes active
           appDelegate.updateQuickActions()
+          
+          // Check if pause has expired when app becomes active
+          checkPauseExpiration()
         }
+      }
+    }
+  }
+  
+  private func checkPauseExpiration() {
+    if let pauseEndTime = UserDefaults.standard.object(forKey: "pauseEndTime") as? Date {
+      if Date() >= pauseEndTime {
+        // Pause has expired, resume challenges
+        appSettings.challengesPaused = false
+        UserDefaults.standard.removeObject(forKey: "pauseEndTime")
+        ScreenTimeManager.shared.updateShielding()
+        appDelegate.updateQuickActions()
       }
     }
   }

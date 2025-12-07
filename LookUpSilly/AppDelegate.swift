@@ -32,16 +32,27 @@ class AppDelegate: NSObject, UIApplicationDelegate {
   private func handleShortcutItem(_ shortcutItem: UIApplicationShortcutItem) {
     if shortcutItem.type == "com.lookupsilly.app.pauseChallenges" {
       let isPaused = UserDefaults.standard.bool(forKey: "challengesPaused")
-      UserDefaults.standard.set(!isPaused, forKey: "challengesPaused")
       
-      // Notify the app to update UI and shields
-      NotificationCenter.default.post(
-        name: NSNotification.Name("ChallengesPausedStateChanged"),
-        object: nil
-      )
-      
-      // Update quick actions to reflect new state
-      updateQuickActions()
+      if isPaused {
+        // If already paused, resume immediately
+        UserDefaults.standard.set(false, forKey: "challengesPaused")
+        UserDefaults.standard.removeObject(forKey: "pauseEndTime")
+        
+        // Notify the app to update UI and shields
+        NotificationCenter.default.post(
+          name: NSNotification.Name("ChallengesPausedStateChanged"),
+          object: nil
+        )
+        
+        // Update quick actions to reflect new state
+        updateQuickActions()
+      } else {
+        // If not paused, show duration selector
+        NotificationCenter.default.post(
+          name: NSNotification.Name("ShowPauseDurationSheet"),
+          object: nil
+        )
+      }
     }
   }
   
@@ -71,17 +82,28 @@ class SceneDelegate: NSObject, UIWindowSceneDelegate {
     // Handle shortcut item when app is already running
     if shortcutItem.type == "com.lookupsilly.app.pauseChallenges" {
       let isPaused = UserDefaults.standard.bool(forKey: "challengesPaused")
-      UserDefaults.standard.set(!isPaused, forKey: "challengesPaused")
       
-      // Notify the app to update UI and shields
-      NotificationCenter.default.post(
-        name: NSNotification.Name("ChallengesPausedStateChanged"),
-        object: nil
-      )
-      
-      // Update quick actions to reflect new state
-      if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
-        appDelegate.updateQuickActions()
+      if isPaused {
+        // If already paused, resume immediately
+        UserDefaults.standard.set(false, forKey: "challengesPaused")
+        UserDefaults.standard.removeObject(forKey: "pauseEndTime")
+        
+        // Notify the app to update UI and shields
+        NotificationCenter.default.post(
+          name: NSNotification.Name("ChallengesPausedStateChanged"),
+          object: nil
+        )
+        
+        // Update quick actions to reflect new state
+        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+          appDelegate.updateQuickActions()
+        }
+      } else {
+        // If not paused, show duration selector
+        NotificationCenter.default.post(
+          name: NSNotification.Name("ShowPauseDurationSheet"),
+          object: nil
+        )
       }
       
       completionHandler(true)
