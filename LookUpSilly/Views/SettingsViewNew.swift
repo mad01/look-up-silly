@@ -23,14 +23,15 @@ struct SettingsViewNew: View {
               title: "Blocked Apps",
               subtitle: "Requires challenge to access"
             )
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets())
             .onChange(of: screenTimeManager.blockedApps) { _, newValue in
               screenTimeManager.setBlockedApps(newValue)
             }
           } header: {
             Text("App Management")
               .foregroundColor(.white)
+          } footer: {
+            Text("Tip: Use the search bar in the app picker to quickly find your installed apps. Empty categories can be ignored.")
+              .foregroundColor(.gray)
           }
           .listRowBackground(Color.white.opacity(0.1))
           
@@ -40,8 +41,6 @@ struct SettingsViewNew: View {
               title: "Always Allowed",
               subtitle: "No challenge required"
             )
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets())
             .onChange(of: screenTimeManager.allowedApps) { _, newValue in
               screenTimeManager.setAllowedApps(newValue)
             }
@@ -101,35 +100,38 @@ struct SettingsViewNew: View {
           .listRowBackground(Color.white.opacity(0.1))
           
           Section {
-            HStack {
-              Image(systemName: "info.circle")
-                .foregroundColor(.blue)
-              Text("How It Works")
-                .foregroundColor(.white)
-            }
-            
             VStack(alignment: .leading, spacing: 12) {
-              InfoRow(
-                number: "1",
-                text: "Blocked apps will show a shield when you try to open them"
-              )
-              InfoRow(
-                number: "2",
-                text: "Open Look Up, Silly! and complete a challenge"
-              )
-              InfoRow(
-                number: "3",
-                text: "All blocked apps unlock for 5 minutes"
-              )
-              InfoRow(
-                number: "4",
-                text: "After 5 minutes, protection reactivates"
-              )
+              HStack {
+                Image(systemName: "info.circle")
+                  .foregroundColor(.blue)
+                Text("How It Works")
+                  .foregroundColor(.white)
+                  .font(.headline)
+              }
+              
+              VStack(alignment: .leading, spacing: 12) {
+                InfoRow(
+                  number: "1",
+                  text: "Blocked apps will show a shield when you try to open them"
+                )
+                InfoRow(
+                  number: "2",
+                  text: "Open Look Up, Silly! and complete a challenge"
+                )
+                InfoRow(
+                  number: "3",
+                  text: "All blocked apps unlock for 5 minutes"
+                )
+                InfoRow(
+                  number: "4",
+                  text: "After 5 minutes, protection reactivates"
+                )
+              }
+              .foregroundColor(.gray)
+              .font(.caption)
             }
-            .foregroundColor(.gray)
-            .font(.caption)
           }
-          .listRowBackground(Color.white.opacity(0.05))
+          .listRowBackground(Color.white.opacity(0.1))
           
           Section {
             // Stats Display
@@ -201,11 +203,15 @@ struct SettingsViewNew: View {
               HStack {
                 Image(systemName: "hammer.circle")
                   .foregroundColor(.purple)
-                Text("Test Challenges")
-                  .foregroundColor(.purple)
+                VStack(alignment: .leading, spacing: 4) {
+                  Text("Test Challenges")
+                    .foregroundColor(.white)
+                  Text("Development")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                }
                 Spacer()
-                Text("Development")
-                  .font(.caption)
+                Image(systemName: "chevron.right")
                   .foregroundColor(.gray)
               }
             }
@@ -216,11 +222,15 @@ struct SettingsViewNew: View {
               HStack {
                 Image(systemName: "chart.bar.xaxis")
                   .foregroundColor(.orange)
-                Text("Reset Statistics")
-                  .foregroundColor(.orange)
+                VStack(alignment: .leading, spacing: 4) {
+                  Text("Reset Statistics")
+                    .foregroundColor(.white)
+                  Text("Development")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                }
                 Spacer()
-                Text("Development")
-                  .font(.caption)
+                Image(systemName: "chevron.right")
                   .foregroundColor(.gray)
               }
             }
@@ -232,8 +242,16 @@ struct SettingsViewNew: View {
               HStack {
                 Image(systemName: "shield.slash")
                   .foregroundColor(.orange)
-                Text("Temporarily Disable All Shields")
-                  .foregroundColor(.orange)
+                VStack(alignment: .leading, spacing: 4) {
+                  Text("Temporarily Disable All Shields")
+                    .foregroundColor(.white)
+                  Text("Removes shields until next app launch")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                  .foregroundColor(.gray)
               }
             }
             
@@ -243,8 +261,16 @@ struct SettingsViewNew: View {
               HStack {
                 Image(systemName: "arrow.counterclockwise")
                   .foregroundColor(.red)
-                Text("Reset App & Start Over")
-                  .foregroundColor(.red)
+                VStack(alignment: .leading, spacing: 4) {
+                  Text("Reset App & Start Over")
+                    .foregroundColor(.white)
+                  Text("Clear all settings and blocks")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                  .foregroundColor(.gray)
               }
             }
           } header: {

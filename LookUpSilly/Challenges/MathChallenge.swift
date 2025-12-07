@@ -98,91 +98,93 @@ struct MathChallengeView: View {
   @FocusState private var isInputFocused: Bool
   
   var body: some View {
-    ZStack {
-      Color.black.ignoresSafeArea()
-      
-      ScrollView {
-        VStack(spacing: 40) {
-          // Header
-          VStack(spacing: 12) {
-            Image(systemName: "function")
-              .font(.system(size: 60))
-              .foregroundStyle(.blue.gradient)
-            
-            Text("Math Challenge")
-              .font(.system(size: 32, weight: .bold))
-              .foregroundColor(.white)
-            
-            Text("Solve 5 problems to continue")
-              .font(.subheadline)
-              .foregroundColor(.gray)
-          }
-          .padding(.top, 60)
-          
-          // Progress
-          HStack(spacing: 8) {
-            ForEach(0..<5) { index in
-              Circle()
-                .fill(index < challenge.currentProblemIndex ? Color.green : 
-                      index == challenge.currentProblemIndex ? Color.blue : Color.gray.opacity(0.3))
-                .frame(width: 12, height: 12)
-            }
-          }
-          
-          // Current Problem
-          if challenge.currentProblemIndex < challenge.problems.count {
-            VStack(spacing: 30) {
-              Text("Problem \(challenge.currentProblemIndex + 1) of 5")
-                .font(.headline)
+    GeometryReader { geometry in
+      ZStack {
+        Color.black.ignoresSafeArea()
+        
+        ScrollView {
+          VStack(spacing: 40) {
+            // Header
+            VStack(spacing: 12) {
+              Image(systemName: "function")
+                .font(.system(size: 60))
+                .foregroundStyle(.blue.gradient)
+              
+              Text("Math Challenge")
+                .font(.system(size: 32, weight: .bold))
+                .foregroundColor(.white)
+              
+              Text("Solve 5 problems to continue")
+                .font(.subheadline)
                 .foregroundColor(.gray)
-              
-              Text(challenge.problems[challenge.currentProblemIndex].question)
-                .font(.system(size: 48, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
-              
-              TextField("Your answer", text: $challenge.userAnswer)
-                .keyboardType(.numberPad)
-                .font(.system(size: 32, weight: .semibold))
-                .multilineTextAlignment(.center)
-                .foregroundColor(.white)
-                .padding()
-                .background(Color.white.opacity(0.1))
-                .cornerRadius(12)
-                .focused($isInputFocused)
-                .overlay(
-                  RoundedRectangle(cornerRadius: 12)
-                    .stroke(challenge.showError ? Color.red : Color.clear, lineWidth: 2)
-                )
-                .padding(.horizontal, 40)
-              
-              if challenge.showError {
-                Text("Incorrect! Try again")
-                  .foregroundColor(.red)
-                  .font(.headline)
-              }
-              
-              Button(action: {
-                challenge.checkAnswer()
-              }) {
-                Text("Submit")
-                  .font(.headline)
-                  .foregroundColor(.white)
-                  .frame(maxWidth: .infinity)
-                  .padding()
-                  .background(challenge.userAnswer.isEmpty ? Color.gray : Color.blue)
-                  .cornerRadius(12)
-              }
-              .disabled(challenge.userAnswer.isEmpty)
-              .padding(.horizontal, 40)
             }
-            .padding(.top, 40)
+            .padding(.top, 60)
+            
+            // Progress
+            HStack(spacing: 8) {
+              ForEach(0..<5) { index in
+                Circle()
+                  .fill(index < challenge.currentProblemIndex ? Color.green : 
+                        index == challenge.currentProblemIndex ? Color.blue : Color.gray.opacity(0.3))
+                  .frame(width: 12, height: 12)
+              }
+            }
+            
+            // Current Problem
+            if challenge.currentProblemIndex < challenge.problems.count {
+              VStack(spacing: 30) {
+                Text("Problem \(challenge.currentProblemIndex + 1) of 5")
+                  .font(.headline)
+                  .foregroundColor(.gray)
+                
+                Text(challenge.problems[challenge.currentProblemIndex].question)
+                  .font(.system(size: 48, weight: .bold, design: .rounded))
+                  .foregroundColor(.white)
+                
+                TextField("Your answer", text: $challenge.userAnswer)
+                  .keyboardType(.numberPad)
+                  .font(.system(size: 32, weight: .semibold))
+                  .multilineTextAlignment(.center)
+                  .foregroundColor(.white)
+                  .padding()
+                  .background(Color.white.opacity(0.1))
+                  .cornerRadius(12)
+                  .focused($isInputFocused)
+                  .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                      .stroke(challenge.showError ? Color.red : Color.clear, lineWidth: 2)
+                  )
+                  .padding(.horizontal, 40)
+                
+                if challenge.showError {
+                  Text("Incorrect! Try again")
+                    .foregroundColor(.red)
+                    .font(.headline)
+                }
+                
+                Button(action: {
+                  challenge.checkAnswer()
+                }) {
+                  Text("Submit")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(challenge.userAnswer.isEmpty ? Color.gray : Color.blue)
+                    .cornerRadius(12)
+                }
+                .disabled(challenge.userAnswer.isEmpty)
+                .padding(.horizontal, 40)
+              }
+              .padding(.top, 40)
+            }
+            
+            Spacer(minLength: 40)
           }
-          
-          Spacer(minLength: 40)
+          .frame(minHeight: geometry.size.height - 100)
         }
-        .frame(minHeight: UIScreen.main.bounds.height - 100)
+        .scrollDismissesKeyboard(.interactively)
       }
-      .scrollDismissesKeyboard(.interactively)
     }
     .onAppear {
       isInputFocused = true

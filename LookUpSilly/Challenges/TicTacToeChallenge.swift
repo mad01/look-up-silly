@@ -134,7 +134,11 @@ class TicTacToeGame: ObservableObject {
     if mustMove {
       // Try to win by moving a piece
       if let winningMove = findWinningMoveByMoving(for: .computer) {
-        return winningMove
+        // Find a computer piece to move to the winning position
+        let computerPieces = board.enumerated().filter { $0.element == .computer }.map { $0.offset }
+        if let pieceToMove = computerPieces.randomElement() {
+          return (from: pieceToMove, to: winningMove)
+        }
       }
       
       // Try to block human from winning
@@ -278,11 +282,12 @@ struct TicTacToeView: View {
             }
           }
           
-          if game.isComputerThinking {
-            Text("Computer is thinking...")
-              .font(.subheadline)
-              .foregroundColor(.gray)
-          }
+          // Reserve space for computer thinking message to prevent layout jump
+          Text(game.isComputerThinking ? "Computer is thinking..." : " ")
+            .font(.subheadline)
+            .foregroundColor(.gray)
+            .opacity(game.isComputerThinking ? 1 : 0)
+            .frame(height: 20)
         }
         
         // Game Board

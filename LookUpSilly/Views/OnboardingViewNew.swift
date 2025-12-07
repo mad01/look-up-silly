@@ -102,6 +102,7 @@ struct OnboardingViewNew: View {
           title: "Blocked Apps",
           subtitle: "These apps will require a challenge"
         )
+        .padding(.horizontal, 20)
         
         Divider()
           .background(Color.gray)
@@ -113,6 +114,7 @@ struct OnboardingViewNew: View {
           title: "Always Allowed (Optional)",
           subtitle: "These apps will always be accessible"
         )
+        .padding(.horizontal, 20)
         
         Button(action: {
           screenTimeManager.setBlockedApps(screenTimeManager.blockedApps)
