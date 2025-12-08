@@ -154,6 +154,14 @@ struct ChallengeTestView: View {
       let challenge = Micro2048Challenge()
       challenge.isTestMode = true
       currentChallenge = challenge
+    case .colorTap:
+      let challenge = ColorTapChallenge()
+      challenge.isTestMode = true
+      currentChallenge = challenge
+    case .pathRecall:
+      let challenge = PathRecallChallenge()
+      challenge.isTestMode = true
+      currentChallenge = challenge
     }
   }
 }
@@ -173,7 +181,7 @@ struct ChallengeTypeCard: View {
           .frame(width: 50)
         
         VStack(alignment: .leading, spacing: 4) {
-          Text(challengeType.rawValue)
+          Text(challengeType.title)
             .font(.headline)
             .foregroundColor(colors.textPrimary)
           

@@ -34,6 +34,8 @@ class ChallengeStatsManager: ObservableObject {
   @Published var mathChallengesCompleted: Int = 0
   @Published var ticTacToeChallengesCompleted: Int = 0
   @Published var micro2048ChallengesCompleted: Int = 0
+  @Published var colorTapChallengesCompleted: Int = 0
+  @Published var pathRecallChallengesCompleted: Int = 0
   @Published var lastSyncDate: Date?
   @Published var completionEvents: [ChallengeCompletionEvent] = []
   
@@ -44,6 +46,8 @@ class ChallengeStatsManager: ObservableObject {
     static let mathChallenges = "mathChallengesCompleted"
     static let ticTacToeChallenges = "ticTacToeChallengesCompleted"
     static let micro2048Challenges = "micro2048ChallengesCompleted"
+    static let colorTapChallenges = "colorTapChallengesCompleted"
+    static let pathRecallChallenges = "pathRecallChallengesCompleted"
     static let lastSync = "lastSyncDate"
     static let completionEvents = "completionEvents"
   }
@@ -85,6 +89,8 @@ class ChallengeStatsManager: ObservableObject {
       mathChallengesCompleted = Int(cloudStore.longLong(forKey: Keys.mathChallenges))
       ticTacToeChallengesCompleted = Int(cloudStore.longLong(forKey: Keys.ticTacToeChallenges))
       micro2048ChallengesCompleted = Int(cloudStore.longLong(forKey: Keys.micro2048Challenges))
+      colorTapChallengesCompleted = Int(cloudStore.longLong(forKey: Keys.colorTapChallenges))
+      pathRecallChallengesCompleted = Int(cloudStore.longLong(forKey: Keys.pathRecallChallenges))
       
       if let syncTimestamp = cloudStore.object(forKey: Keys.lastSync) as? Double {
         lastSyncDate = Date(timeIntervalSince1970: syncTimestamp)
@@ -107,6 +113,8 @@ class ChallengeStatsManager: ObservableObject {
       mathChallengesCompleted = localStore.integer(forKey: Keys.mathChallenges)
       ticTacToeChallengesCompleted = localStore.integer(forKey: Keys.ticTacToeChallenges)
       micro2048ChallengesCompleted = localStore.integer(forKey: Keys.micro2048Challenges)
+      colorTapChallengesCompleted = localStore.integer(forKey: Keys.colorTapChallenges)
+      pathRecallChallengesCompleted = localStore.integer(forKey: Keys.pathRecallChallenges)
       
       if let syncTimestamp = localStore.object(forKey: Keys.lastSync) as? Double {
         lastSyncDate = Date(timeIntervalSince1970: syncTimestamp)
@@ -145,6 +153,8 @@ class ChallengeStatsManager: ObservableObject {
     cloudStore.set(Int64(mathChallengesCompleted), forKey: Keys.mathChallenges)
     cloudStore.set(Int64(ticTacToeChallengesCompleted), forKey: Keys.ticTacToeChallenges)
     cloudStore.set(Int64(micro2048ChallengesCompleted), forKey: Keys.micro2048Challenges)
+    cloudStore.set(Int64(colorTapChallengesCompleted), forKey: Keys.colorTapChallenges)
+    cloudStore.set(Int64(pathRecallChallengesCompleted), forKey: Keys.pathRecallChallenges)
     cloudStore.set(timestamp, forKey: Keys.lastSync)
     if let eventsData = eventsData {
       cloudStore.set(eventsData, forKey: Keys.completionEvents)
@@ -156,6 +166,8 @@ class ChallengeStatsManager: ObservableObject {
     localStore.set(mathChallengesCompleted, forKey: Keys.mathChallenges)
     localStore.set(ticTacToeChallengesCompleted, forKey: Keys.ticTacToeChallenges)
     localStore.set(micro2048ChallengesCompleted, forKey: Keys.micro2048Challenges)
+    localStore.set(colorTapChallengesCompleted, forKey: Keys.colorTapChallenges)
+    localStore.set(pathRecallChallengesCompleted, forKey: Keys.pathRecallChallenges)
     localStore.set(timestamp, forKey: Keys.lastSync)
     if let eventsData = eventsData {
       localStore.set(eventsData, forKey: Keys.completionEvents)
@@ -194,6 +206,10 @@ class ChallengeStatsManager: ObservableObject {
       ticTacToeChallengesCompleted += 1
     case .micro2048:
       micro2048ChallengesCompleted += 1
+    case .colorTap:
+      colorTapChallengesCompleted += 1
+    case .pathRecall:
+      pathRecallChallengesCompleted += 1
     }
     
     // Add completion event with timestamp
@@ -217,8 +233,14 @@ class ChallengeStatsManager: ObservableObject {
   }
   
   /// Get breakdown stats
-  func getBreakdownStats() -> (math: Int, ticTacToe: Int, micro2048: Int) {
-    return (mathChallengesCompleted, ticTacToeChallengesCompleted, micro2048ChallengesCompleted)
+  func getBreakdownStats() -> [ChallengeType: Int] {
+    [
+      .math: mathChallengesCompleted,
+      .ticTacToe: ticTacToeChallengesCompleted,
+      .micro2048: micro2048ChallengesCompleted,
+      .colorTap: colorTapChallengesCompleted,
+      .pathRecall: pathRecallChallengesCompleted
+    ]
   }
   
   /// Reset all stats (for testing/debugging)
@@ -227,6 +249,8 @@ class ChallengeStatsManager: ObservableObject {
     mathChallengesCompleted = 0
     ticTacToeChallengesCompleted = 0
     micro2048ChallengesCompleted = 0
+    colorTapChallengesCompleted = 0
+    pathRecallChallengesCompleted = 0
     lastSyncDate = nil
     completionEvents = []
     
@@ -235,6 +259,8 @@ class ChallengeStatsManager: ObservableObject {
     cloudStore.removeObject(forKey: Keys.mathChallenges)
     cloudStore.removeObject(forKey: Keys.ticTacToeChallenges)
     cloudStore.removeObject(forKey: Keys.micro2048Challenges)
+    cloudStore.removeObject(forKey: Keys.colorTapChallenges)
+    cloudStore.removeObject(forKey: Keys.pathRecallChallenges)
     cloudStore.removeObject(forKey: Keys.lastSync)
     cloudStore.removeObject(forKey: Keys.completionEvents)
     cloudStore.synchronize()
@@ -244,6 +270,8 @@ class ChallengeStatsManager: ObservableObject {
     localStore.removeObject(forKey: Keys.mathChallenges)
     localStore.removeObject(forKey: Keys.ticTacToeChallenges)
     localStore.removeObject(forKey: Keys.micro2048Challenges)
+    localStore.removeObject(forKey: Keys.colorTapChallenges)
+    localStore.removeObject(forKey: Keys.pathRecallChallenges)
     localStore.removeObject(forKey: Keys.lastSync)
     localStore.removeObject(forKey: Keys.completionEvents)
     

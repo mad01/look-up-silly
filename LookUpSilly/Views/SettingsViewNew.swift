@@ -271,7 +271,7 @@ struct SettingsViewNew: View {
               HStack {
                 Image(systemName: "function")
                   .foregroundColor(colors.mathChallenge)
-                Text("Math Challenges")
+                Text(ChallengeType.math.title)
                   .foregroundColor(colors.textSecondary)
                 Spacer()
                 Text("\(statsManager.mathChallengesCompleted)")
@@ -281,7 +281,7 @@ struct SettingsViewNew: View {
               HStack {
                 Image(systemName: "square.grid.3x3.fill")
                   .foregroundColor(colors.ticTacToe)
-                Text("Tic-Tac-Toe")
+                Text(ChallengeType.ticTacToe.title)
                   .foregroundColor(colors.textSecondary)
                 Spacer()
                 Text("\(statsManager.ticTacToeChallengesCompleted)")
@@ -289,12 +289,32 @@ struct SettingsViewNew: View {
               }
               
               HStack {
-                Image(systemName: "square.grid.3x3.fill")
+                Image(systemName: "square.grid.4x3.fill")
                   .foregroundColor(colors.micro2048)
-                Text("Micro 2048")
+                Text(ChallengeType.micro2048.title)
                   .foregroundColor(colors.textSecondary)
                 Spacer()
                 Text("\(statsManager.micro2048ChallengesCompleted)")
+                  .foregroundColor(colors.textPrimary)
+              }
+              
+              HStack {
+                Image(systemName: ChallengeType.colorTap.icon)
+                  .foregroundColor(colors.colorTap)
+                Text(ChallengeType.colorTap.title)
+                  .foregroundColor(colors.textSecondary)
+                Spacer()
+                Text("\(statsManager.colorTapChallengesCompleted)")
+                  .foregroundColor(colors.textPrimary)
+              }
+              
+              HStack {
+                Image(systemName: ChallengeType.pathRecall.icon)
+                  .foregroundColor(colors.pathRecall)
+                Text(ChallengeType.pathRecall.title)
+                  .foregroundColor(colors.textSecondary)
+                Spacer()
+                Text("\(statsManager.pathRecallChallengesCompleted)")
                   .foregroundColor(colors.textPrimary)
               }
               
@@ -507,7 +527,7 @@ struct ChallengeTypeSettingsView: View {
         ForEach(ChallengeType.allCases, id: \.self) { type in
           Toggle(isOn: binding(for: type)) {
             VStack(alignment: .leading, spacing: 2) {
-              Text(type.rawValue)
+              Text(type.title)
                 .foregroundColor(colors.textPrimary)
               Text(type.description)
                 .font(.caption)

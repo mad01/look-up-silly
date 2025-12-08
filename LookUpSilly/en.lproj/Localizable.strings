@@ -61,6 +61,17 @@
 "pause.indefinite" = "Paused indefinitely";
 
 /* Challenges */
+"challenge.type.math.title" = "Math Challenge";
+"challenge.type.math.description" = "Solve 5 math problems";
+"challenge.type.tictactoe.title" = "Tic-Tac-Toe";
+"challenge.type.tictactoe.description" = "Win 1 game against computer";
+"challenge.type.micro2048.title" = "Micro 2048";
+"challenge.type.micro2048.description" = "Reach 64 in the puzzle";
+"challenge.type.colortap.title" = "Color Tap";
+"challenge.type.colortap.description" = "Tap the named color before time runs out";
+"challenge.type.pathrecall.title" = "Path Recall";
+"challenge.type.pathrecall.description" = "Memorize and repeat the glowing path";
+
 "challenge.math.title" = "Math Challenge";
 "challenge.math.subtitle" = "Solve 5 problems to continue";
 "challenge.math.problem" = "Problem %d of 5";
@@ -89,6 +100,30 @@
 "challenge.micro2048.keep_playing" = "Keep playing or finish now";
 "challenge.micro2048.score" = "SCORE";
 "challenge.micro2048.highest" = "HIGHEST";
+
+"challenge.color_tap.title" = "Color Tap";
+"challenge.color_tap.subtitle" = "Tap the named color before time runs out";
+"challenge.color_tap.progress" = "Round %d of %d";
+"challenge.color_tap.prompt" = "Tap the matching color";
+"challenge.color_tap.failed" = "Too slow or wrong color. Try again.";
+"challenge.color_tap.restart" = "Restart";
+"challenge.color_tap.color.sunset" = "Sunset";
+"challenge.color_tap.color.clay" = "Clay";
+"challenge.color_tap.color.sand" = "Sand";
+"challenge.color_tap.color.sage" = "Sage";
+"challenge.color_tap.color.ember" = "Ember";
+
+"challenge.path_recall.title" = "Path Recall";
+"challenge.path_recall.subtitle" = "Memorize and trace the glowing path";
+"challenge.path_recall.progress" = "Path %d of %d";
+"challenge.path_recall.previewing" = "Watch the path";
+"challenge.path_recall.your_turn" = "Repeat the path";
+"challenge.path_recall.failed" = "Incorrect step. Try again.";
+"challenge.path_recall.completed" = "Great memory!";
+"challenge.path_recall.next_hint" = "Next: %d";
+"challenge.path_recall.replay" = "Show Path Again";
+"challenge.path_recall.restart" = "Restart";
+
 
 /* Status */
 "status.allowed" = "Allowed";

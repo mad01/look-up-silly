@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 class ChallengeManager: ObservableObject {
   @Published var currentChallenge: (any Challenge)?
   @Published var showingChallenge = false
@@ -23,6 +24,10 @@ class ChallengeManager: ObservableObject {
       currentChallenge = TicTacToeChallenge()
     case .micro2048:
       currentChallenge = Micro2048Challenge()
+    case .colorTap:
+      currentChallenge = ColorTapChallenge()
+    case .pathRecall:
+      currentChallenge = PathRecallChallenge()
     }
     
     showingChallenge = true
