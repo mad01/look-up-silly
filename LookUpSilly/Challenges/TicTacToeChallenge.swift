@@ -234,6 +234,7 @@ class TicTacToeGame: ObservableObject {
 struct TicTacToeView: View {
   @Environment(\.themeColors) private var colors
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.challengeCancelAction) private var challengeCancelAction
   @ObservedObject var challenge: TicTacToeChallenge
   @StateObject private var game = TicTacToeGame()
   let onComplete: () -> Void
@@ -259,6 +260,9 @@ struct TicTacToeView: View {
           Spacer()
           if showCancelButton {
             Button(action: {
+              if let cancelAction = challengeCancelAction {
+                cancelAction()
+              }
               dismiss()
             }) {
               Image(systemName: "xmark.circle.fill")

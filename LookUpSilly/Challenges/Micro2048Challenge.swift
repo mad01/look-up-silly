@@ -373,6 +373,7 @@ class Micro2048Game: ObservableObject {
 struct Micro2048View: View {
   @Environment(\.themeColors) private var colors
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.challengeCancelAction) private var challengeCancelAction
   @ObservedObject var challenge: Micro2048Challenge
   @StateObject private var game = Micro2048Game()
   let onComplete: () -> Void
@@ -394,6 +395,9 @@ struct Micro2048View: View {
           Spacer()
           if showCancelButton {
             Button(action: {
+              if let cancelAction = challengeCancelAction {
+                cancelAction()
+              }
               dismiss()
             }) {
               Image(systemName: "xmark.circle.fill")
@@ -702,7 +706,7 @@ struct TileView2048: View {
         scale = 1.0
       }
     }
-    .onChange(of: value) { _ in
+    .onChange(of: value) { _, _ in
       // Always ensure scale returns to 1.0 when value changes
       withAnimation(.interpolatingSpring(stiffness: 200, damping: 15)) {
         scale = 1.0

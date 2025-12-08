@@ -96,6 +96,7 @@ struct MathProblem {
 struct MathChallengeView: View {
   @Environment(\.themeColors) private var colors
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.challengeCancelAction) private var challengeCancelAction
   @ObservedObject var challenge: MathChallenge
   let onComplete: () -> Void
   let appSettings: AppSettings
@@ -117,6 +118,9 @@ struct MathChallengeView: View {
           Spacer()
           if showCancelButton {
             Button(action: {
+              if let cancelAction = challengeCancelAction {
+                cancelAction()
+              }
               dismiss()
             }) {
               Image(systemName: "xmark.circle.fill")

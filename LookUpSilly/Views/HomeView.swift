@@ -96,7 +96,10 @@ struct HomeView: View {
             onComplete: {
               challengeManager.completeChallenge(success: true)
             },
-            appSettings: appSettings
+            appSettings: appSettings,
+            onCancelAction: { @MainActor in
+              challengeManager.completeChallenge(success: true)
+            }
           )
         }
       }
@@ -152,9 +155,11 @@ struct ChallengeSheetView: View {
   let challenge: any Challenge
   let onComplete: () -> Void
   let appSettings: AppSettings
+  let onCancelAction: ChallengeCancelAction?
   
   var body: some View {
     challenge.view(onComplete: onComplete, appSettings: appSettings)
+      .environment(\.challengeCancelAction, onCancelAction)
   }
 }
 

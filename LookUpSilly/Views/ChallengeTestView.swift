@@ -132,7 +132,8 @@ struct ChallengeTestView: View {
                 print("✅ Challenge completed! (Test mode - no app unlock)")
               }
             },
-            appSettings: appSettings
+            appSettings: appSettings,
+            onCancelAction: nil // Play-for-fun should not unlock apps on cancel
           )
         }
       }

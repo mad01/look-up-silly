@@ -34,3 +34,18 @@ protocol Challenge {
   @MainActor func view(onComplete: @escaping () -> Void, appSettings: AppSettings) -> AnyView
 }
 
+// Shared cancel action type for challenge views
+typealias ChallengeCancelAction = @Sendable @MainActor () -> Void
+
+// Environment key to allow host views to override cancel behavior
+struct ChallengeCancelActionKey: EnvironmentKey {
+  static let defaultValue: ChallengeCancelAction? = nil
+}
+
+extension EnvironmentValues {
+  var challengeCancelAction: ChallengeCancelAction? {
+    get { self[ChallengeCancelActionKey.self] }
+    set { self[ChallengeCancelActionKey.self] = newValue }
+  }
+}
+
