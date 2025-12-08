@@ -170,18 +170,22 @@ struct PathRecallChallengeView: View {
         .opacity(showCancelButton ? 1 : 0)
         
         // Header
-        VStack(spacing: 8) {
-          Image(systemName: ChallengeType.pathRecall.icon)
-            .font(.system(size: 60))
-            .foregroundStyle(colors.pathRecall.gradient)
+        VStack(spacing: 16) {
+          RoundedRectangle(cornerRadius: 20)
+            .fill(colors.pathRecall.gradient)
+            .frame(height: 110)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 28)
           
-          Text(NSLocalizedString("challenge.path_recall.title", comment: ""))
-            .font(.system(size: 28, weight: .bold))
-            .foregroundColor(colors.textPrimary)
-          
-          Text(NSLocalizedString("challenge.path_recall.subtitle", comment: ""))
-            .font(.system(size: 14))
-            .foregroundColor(colors.textSecondary)
+          VStack(spacing: 6) {
+            Text(NSLocalizedString("challenge.path_recall.title", comment: ""))
+              .font(.system(size: 28, weight: .bold))
+              .foregroundColor(colors.textPrimary)
+            
+            Text(NSLocalizedString("challenge.path_recall.subtitle", comment: ""))
+              .font(.system(size: 14))
+              .foregroundColor(colors.textSecondary)
+          }
         }
         .padding(.top, 10)
         

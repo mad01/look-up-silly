@@ -185,7 +185,7 @@ struct ColorTapChallengeView: View {
             Button(action: {
               challenge.select(option)
             }) {
-              HStack {
+              VStack(spacing: 10) {
                 Circle()
                   .fill(option.color)
                   .frame(width: 44, height: 44)
@@ -197,10 +197,12 @@ struct ColorTapChallengeView: View {
                 Text(option.name)
                   .font(.headline)
                   .foregroundColor(colors.textPrimary)
-                
-                Spacer()
+                  .lineLimit(1)
+                  .minimumScaleFactor(0.8)
+                  .multilineTextAlignment(.center)
               }
-              .padding()
+              .padding(.vertical, 14)
+              .padding(.horizontal, 10)
               .frame(maxWidth: .infinity)
               .background(colors.surface)
               .cornerRadius(12)
