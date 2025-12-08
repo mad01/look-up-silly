@@ -11,8 +11,8 @@ class TicTacToeChallenge: Challenge, ObservableObject {
   var isTestMode = false
   
   @MainActor
-  func view(onComplete: @escaping () -> Void) -> AnyView {
-    AnyView(TicTacToeView(challenge: self, onComplete: onComplete))
+  func view(onComplete: @escaping () -> Void, appSettings: AppSettings) -> AnyView {
+    AnyView(TicTacToeView(challenge: self, onComplete: onComplete, appSettings: appSettings))
   }
 }
 
@@ -234,10 +234,10 @@ class TicTacToeGame: ObservableObject {
 struct TicTacToeView: View {
   @Environment(\.themeColors) private var colors
   @Environment(\.dismiss) private var dismiss
-  @EnvironmentObject var appSettings: AppSettings
   @ObservedObject var challenge: TicTacToeChallenge
   @StateObject private var game = TicTacToeGame()
   let onComplete: () -> Void
+  let appSettings: AppSettings
   
   @State private var elapsedTime: TimeInterval = 0
   
@@ -415,6 +415,6 @@ struct CellView: View {
 // MARK: - Preview
 
 #Preview {
-  TicTacToeView(challenge: TicTacToeChallenge(), onComplete: {})
+  TicTacToeView(challenge: TicTacToeChallenge(), onComplete: {}, appSettings: AppSettings())
 }
 

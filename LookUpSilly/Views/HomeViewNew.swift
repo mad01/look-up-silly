@@ -4,6 +4,7 @@ import Charts
 
 struct HomeViewNew: View {
   @Environment(\.themeColors) private var colors
+  @EnvironmentObject var appSettings: AppSettings
   @StateObject private var screenTimeManager = ScreenTimeManager.shared
   @StateObject private var statsManager = ChallengeStatsManager.shared
   @State private var showingPlayForFun = false
@@ -83,6 +84,7 @@ struct HomeViewNew: View {
       .navigationBarTitleDisplayMode(.inline)
       .sheet(isPresented: $showingPlayForFun) {
         ChallengeTestView(isDevelopment: false)
+          .environmentObject(appSettings)
       }
     }
   }

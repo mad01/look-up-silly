@@ -388,6 +388,7 @@ struct SettingsViewNew: View {
       }
       .sheet(isPresented: $showingTestChallenges) {
         ChallengeTestView(isDevelopment: true)
+          .environmentObject(appSettings)
       }
       .overlay {
         if showingPauseDurationSheet {

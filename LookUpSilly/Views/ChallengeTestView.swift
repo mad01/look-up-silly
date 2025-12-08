@@ -5,6 +5,7 @@ import SwiftUI
 struct ChallengeTestView: View {
   @Environment(\.themeColors) private var colors
   @Environment(\.dismiss) private var dismiss
+  @EnvironmentObject var appSettings: AppSettings
   @State private var selectedChallengeType: ChallengeType = .math
   @State private var currentChallenge: (any Challenge)?
   @State private var showingChallenge = false
@@ -111,14 +112,18 @@ struct ChallengeTestView: View {
       }
       .fullScreenCover(isPresented: $showingChallenge) {
         if let challenge = currentChallenge {
-          ChallengeSheetView(challenge: challenge) {
-            showingChallenge = false
-            // In test mode, we don't unlock apps
-            if !isDevelopment {
-              // For fun mode, show a message
-              print("✅ Challenge completed! (Test mode - no app unlock)")
-            }
-          }
+          ChallengeSheetView(
+            challenge: challenge,
+            onComplete: {
+              showingChallenge = false
+              // In test mode, we don't unlock apps
+              if !isDevelopment {
+                // For fun mode, show a message
+                print("✅ Challenge completed! (Test mode - no app unlock)")
+              }
+            },
+            appSettings: appSettings
+          )
         }
       }
     }
@@ -186,5 +191,6 @@ struct ChallengeTypeCard: View {
 
 #Preview {
   ChallengeTestView(isDevelopment: true)
+    .environmentObject(AppSettings())
 }
 

@@ -79,10 +79,14 @@ struct HomeView: View {
       .navigationBarTitleDisplayMode(.inline)
       .sheet(isPresented: $showingChallengeSheet) {
         if let challenge = challengeManager.currentChallenge {
-          ChallengeSheetView(challenge: challenge) {
-            showingChallengeSheet = false
-            challengeManager.completeChallenge(success: true)
-          }
+          ChallengeSheetView(
+            challenge: challenge,
+            onComplete: {
+              showingChallengeSheet = false
+              challengeManager.completeChallenge(success: true)
+            },
+            appSettings: appSettings
+          )
         }
       }
     }
@@ -136,9 +140,10 @@ struct AppCard: View {
 struct ChallengeSheetView: View {
   let challenge: any Challenge
   let onComplete: () -> Void
+  let appSettings: AppSettings
   
   var body: some View {
-    challenge.view(onComplete: onComplete)
+    challenge.view(onComplete: onComplete, appSettings: appSettings)
   }
 }
 

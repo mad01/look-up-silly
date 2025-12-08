@@ -10,8 +10,8 @@ class Micro2048Challenge: Challenge, ObservableObject {
   var isTestMode = false
   
   @MainActor
-  func view(onComplete: @escaping () -> Void) -> AnyView {
-    AnyView(Micro2048View(challenge: self, onComplete: onComplete))
+  func view(onComplete: @escaping () -> Void, appSettings: AppSettings) -> AnyView {
+    AnyView(Micro2048View(challenge: self, onComplete: onComplete, appSettings: appSettings))
   }
 }
 
@@ -66,11 +66,11 @@ class Micro2048Game: ObservableObject {
     isGameOver = false
     canContinue = false
     
-    addRandomTile()
-    addRandomTile()
+    addRandomTile(isInitial: true)
+    addRandomTile(isInitial: true)
   }
   
-  private func addRandomTile() {
+  private func addRandomTile(isInitial: Bool = false) {
     var emptyPositions: [(Int, Int)] = []
     
     for row in 0..<gridSize {
@@ -85,7 +85,7 @@ class Micro2048Game: ObservableObject {
     
     // 90% chance for 2, 10% chance for 4
     let value = Int.random(in: 1...10) == 1 ? 4 : 2
-    let newTile = GameTile(id: UUID(), value: value, position: position)
+    let newTile = GameTile(id: UUID(), value: value, position: position, isNew: !isInitial)
     
     grid[position.0][position.1] = newTile
     tiles.append(newTile)
@@ -373,10 +373,10 @@ class Micro2048Game: ObservableObject {
 struct Micro2048View: View {
   @Environment(\.themeColors) private var colors
   @Environment(\.dismiss) private var dismiss
-  @EnvironmentObject var appSettings: AppSettings
   @ObservedObject var challenge: Micro2048Challenge
   @StateObject private var game = Micro2048Game()
   let onComplete: () -> Void
+  let appSettings: AppSettings
   
   @State private var elapsedTime: TimeInterval = 0
   
@@ -631,7 +631,7 @@ struct TileView2048: View {
   let isMerged: Bool
   let isNew: Bool
   
-  @State private var appeared = false
+  @State private var scale: CGFloat = 1.0
   
   private var safeSize: CGFloat {
     max(20, size)
@@ -681,16 +681,6 @@ struct TileView2048: View {
     }
   }
   
-  private var scale: CGFloat {
-    if isMerged {
-      return 1.1
-    } else if isNew && !appeared {
-      return 0.1
-    } else {
-      return 1.0
-    }
-  }
-  
   var body: some View {
     ZStack {
       RoundedRectangle(cornerRadius: 8)
@@ -702,14 +692,20 @@ struct TileView2048: View {
         .foregroundColor(textColor)
     }
     .scaleEffect(scale)
-    .animation(.interpolatingSpring(stiffness: 200, damping: 15), value: scale)
     .onAppear {
       if isNew {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-          appeared = true
+        scale = 0.1
+        withAnimation(.interpolatingSpring(stiffness: 200, damping: 15)) {
+          scale = 1.0
         }
       } else {
-        appeared = true
+        scale = 1.0
+      }
+    }
+    .onChange(of: value) { _ in
+      // Always ensure scale returns to 1.0 when value changes
+      withAnimation(.interpolatingSpring(stiffness: 200, damping: 15)) {
+        scale = 1.0
       }
     }
   }
@@ -718,6 +714,5 @@ struct TileView2048: View {
 // MARK: - Preview
 
 #Preview {
-  Micro2048View(challenge: Micro2048Challenge(), onComplete: {})
-    .environmentObject(AppSettings())
+  Micro2048View(challenge: Micro2048Challenge(), onComplete: {}, appSettings: AppSettings())
 }

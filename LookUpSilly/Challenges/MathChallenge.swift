@@ -41,8 +41,8 @@ class MathChallenge: Challenge, ObservableObject {
   }
   
   @MainActor
-  func view(onComplete: @escaping () -> Void) -> AnyView {
-    AnyView(MathChallengeView(challenge: self, onComplete: onComplete))
+  func view(onComplete: @escaping () -> Void, appSettings: AppSettings) -> AnyView {
+    AnyView(MathChallengeView(challenge: self, onComplete: onComplete, appSettings: appSettings))
   }
 }
 
@@ -96,9 +96,9 @@ struct MathProblem {
 struct MathChallengeView: View {
   @Environment(\.themeColors) private var colors
   @Environment(\.dismiss) private var dismiss
-  @EnvironmentObject var appSettings: AppSettings
   @ObservedObject var challenge: MathChallenge
   let onComplete: () -> Void
+  let appSettings: AppSettings
   @FocusState private var isInputFocused: Bool
   
   @State private var elapsedTime: TimeInterval = 0
@@ -239,6 +239,6 @@ struct MathChallengeView: View {
 // MARK: - Preview
 
 #Preview {
-  MathChallengeView(challenge: MathChallenge(), onComplete: {})
+  MathChallengeView(challenge: MathChallenge(), onComplete: {}, appSettings: AppSettings())
 }
 
