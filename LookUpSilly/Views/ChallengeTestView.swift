@@ -8,8 +8,18 @@ struct ChallengeTestView: View {
   @EnvironmentObject var appSettings: AppSettings
   @State private var selectedChallengeType: ChallengeType = .math
   @State private var currentChallenge: (any Challenge)?
-  @State private var showingChallenge = false
   let isDevelopment: Bool
+  
+  private var isShowingChallenge: Binding<Bool> {
+    Binding(
+      get: { currentChallenge != nil },
+      set: { isPresented in
+        if !isPresented {
+          currentChallenge = nil
+        }
+      }
+    )
+  }
   
   var body: some View {
     NavigationStack {
@@ -110,12 +120,12 @@ struct ChallengeTestView: View {
           .foregroundColor(colors.primary)
         }
       }
-      .fullScreenCover(isPresented: $showingChallenge) {
+      .fullScreenCover(isPresented: isShowingChallenge) {
         if let challenge = currentChallenge {
           ChallengeSheetView(
             challenge: challenge,
             onComplete: {
-              showingChallenge = false
+              currentChallenge = nil
               // In test mode, we don't unlock apps
               if !isDevelopment {
                 // For fun mode, show a message
@@ -144,7 +154,6 @@ struct ChallengeTestView: View {
       challenge.isTestMode = true
       currentChallenge = challenge
     }
-    showingChallenge = true
   }
 }
 

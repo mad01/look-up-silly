@@ -4,7 +4,17 @@ struct HomeView: View {
   @Environment(\.themeColors) private var colors
   @EnvironmentObject var appSettings: AppSettings
   @EnvironmentObject var challengeManager: ChallengeManager
-  @State private var showingChallengeSheet = false
+  
+  private var isShowingChallenge: Binding<Bool> {
+    Binding(
+      get: { challengeManager.currentChallenge != nil },
+      set: { isPresented in
+        if !isPresented {
+          challengeManager.completeChallenge(success: false)
+        }
+      }
+    )
+  }
   
   var body: some View {
     NavigationStack {
@@ -66,7 +76,6 @@ struct HomeView: View {
                         // App unlocked temporarily
                       }
                     }
-                    showingChallengeSheet = true
                   }
                 }
               }
@@ -77,12 +86,11 @@ struct HomeView: View {
         }
       }
       .navigationBarTitleDisplayMode(.inline)
-      .sheet(isPresented: $showingChallengeSheet) {
+      .sheet(isPresented: isShowingChallenge) {
         if let challenge = challengeManager.currentChallenge {
           ChallengeSheetView(
             challenge: challenge,
             onComplete: {
-              showingChallengeSheet = false
               challengeManager.completeChallenge(success: true)
             },
             appSettings: appSettings
