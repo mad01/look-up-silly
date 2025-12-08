@@ -103,6 +103,41 @@ struct SettingsViewNew: View {
           .listRowBackground(colors.surface)
           
           Section {
+            NavigationLink {
+              ChallengeTypeSettingsView(
+                enabledTypes: Binding(
+                  get: { appSettings.enabledChallengeTypes },
+                  set: { appSettings.setEnabledChallengeTypes($0) }
+                )
+              )
+            } label: {
+              HStack {
+                Image(systemName: "gamecontroller")
+                  .foregroundColor(colors.secondary)
+                  .font(.system(size: 24))
+                VStack(alignment: .leading, spacing: 4) {
+                  Text(NSLocalizedString("settings.challenge_types.row_title", comment: ""))
+                    .foregroundColor(colors.textPrimary)
+                    .font(.headline)
+                  Text(NSLocalizedString("settings.challenge_types.row_subtitle", comment: ""))
+                    .foregroundColor(colors.textSecondary)
+                    .font(.caption)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                  .foregroundColor(colors.textSecondary)
+              }
+            }
+          } header: {
+            Text(NSLocalizedString("settings.challenge_types.section_title", comment: ""))
+              .foregroundColor(colors.textPrimary)
+          } footer: {
+            Text(NSLocalizedString("settings.challenge_types.section_footer", comment: ""))
+              .foregroundColor(colors.textSecondary)
+          }
+          .listRowBackground(colors.surface)
+          
+          Section {
             VStack(alignment: .leading, spacing: 12) {
               HStack {
                 Image(systemName: "xmark.circle")
@@ -448,6 +483,62 @@ struct InfoRow: View {
       Text(text)
         .foregroundColor(colors.textSecondary)
     }
+  }
+}
+
+struct ChallengeTypeSettingsView: View {
+  @Environment(\.themeColors) private var colors
+  @Binding var enabledTypes: Set<ChallengeType>
+  
+  var body: some View {
+    List {
+      Section {
+        VStack(alignment: .leading, spacing: 8) {
+          Text(NSLocalizedString("settings.challenge_types.description", comment: ""))
+            .foregroundColor(colors.textPrimary)
+          Text(NSLocalizedString("settings.challenge_types.note", comment: ""))
+            .foregroundColor(colors.textSecondary)
+            .font(.caption)
+        }
+      }
+      .listRowBackground(colors.surface)
+      
+      Section {
+        ForEach(ChallengeType.allCases, id: \.self) { type in
+          Toggle(isOn: binding(for: type)) {
+            VStack(alignment: .leading, spacing: 2) {
+              Text(type.rawValue)
+                .foregroundColor(colors.textPrimary)
+              Text(type.description)
+                .font(.caption)
+                .foregroundColor(colors.textSecondary)
+            }
+          }
+        }
+      } footer: {
+        Text(NSLocalizedString("settings.challenge_types.fallback", comment: ""))
+          .foregroundColor(colors.textSecondary)
+      }
+      .listRowBackground(colors.surface)
+    }
+    .scrollContentBackground(.hidden)
+    .background(colors.background.ignoresSafeArea())
+    .navigationTitle(NSLocalizedString("settings.challenge_types.title", comment: ""))
+  }
+  
+  private func binding(for type: ChallengeType) -> Binding<Bool> {
+    Binding(
+      get: { enabledTypes.contains(type) },
+      set: { isOn in
+        var updated = enabledTypes
+        if isOn {
+          updated.insert(type)
+        } else {
+          updated.remove(type)
+        }
+        enabledTypes = updated
+      }
+    )
   }
 }
 

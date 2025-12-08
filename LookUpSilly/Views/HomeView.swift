@@ -71,7 +71,10 @@ struct HomeView: View {
               VStack(spacing: 12) {
                 ForEach(InstalledApp.commonApps.filter { !appSettings.allowedApps.contains($0.bundleId) }) { app in
                   AppCard(app: app, isAllowed: false) {
-                    challengeManager.requestAppAccess(app: app) { success in
+                    challengeManager.requestAppAccess(
+                      app: app,
+                      enabledChallenges: appSettings.enabledChallengeTypes
+                    ) { success in
                       if success {
                         // App unlocked temporarily
                       }

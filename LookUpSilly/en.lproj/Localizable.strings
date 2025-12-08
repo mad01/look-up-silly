@@ -97,3 +97,13 @@
 /* App Shortcuts */
 "shortcut.pause_challenges" = "Pause challenges instead of deleting Look Up, Silly!";
 
+/* Challenge Type Settings */
+"settings.challenge_types.row_title" = "Challenge Types";
+"settings.challenge_types.row_subtitle" = "Choose which challenges can appear";
+"settings.challenge_types.title" = "Challenge Types";
+"settings.challenge_types.section_title" = "Challenge Selection";
+"settings.challenge_types.section_footer" = "Choose which challenges are used when unlocking blocked apps.";
+"settings.challenge_types.description" = "Choose which challenges can appear when opening blocked apps.";
+"settings.challenge_types.note" = "Does not affect Play for Fun.";
+"settings.challenge_types.fallback" = "If all challenges are disabled, all challenges will be used by default.";
+

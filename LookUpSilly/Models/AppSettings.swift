@@ -5,11 +5,14 @@ class AppSettings: ObservableObject {
   @AppStorage("allowedApps") private var allowedAppsData: Data = Data()
   @AppStorage("challengesPaused") var challengesPaused: Bool = false
   @AppStorage("challengeCancelDelaySeconds") var challengeCancelDelaySeconds: Int = 60
+  @AppStorage("enabledChallengeTypes") private var enabledChallengeTypesData: Data = Data()
   
   @Published var allowedApps: Set<String> = []
+  @Published var enabledChallengeTypes: Set<ChallengeType> = Set(ChallengeType.allCases)
   
   init() {
     loadAllowedApps()
+    loadEnabledChallengeTypes()
   }
   
   func loadAllowedApps() {
@@ -22,6 +25,36 @@ class AppSettings: ObservableObject {
     if let encoded = try? JSONEncoder().encode(allowedApps) {
       allowedAppsData = encoded
     }
+  }
+  
+  func loadEnabledChallengeTypes() {
+    if let decoded = try? JSONDecoder().decode([String].self, from: enabledChallengeTypesData) {
+      let types = decoded.compactMap { ChallengeType(rawValue: $0) }
+      enabledChallengeTypes = types.isEmpty ? Set(ChallengeType.allCases) : Set(types)
+    } else {
+      enabledChallengeTypes = Set(ChallengeType.allCases)
+    }
+  }
+  
+  func saveEnabledChallengeTypes() {
+    let rawValues = enabledChallengeTypes.map { $0.rawValue }
+    if let encoded = try? JSONEncoder().encode(rawValues) {
+      enabledChallengeTypesData = encoded
+    }
+  }
+  
+  func setEnabledChallengeTypes(_ types: Set<ChallengeType>) {
+    enabledChallengeTypes = types
+    saveEnabledChallengeTypes()
+  }
+  
+  func toggleChallengeType(_ type: ChallengeType, isEnabled: Bool) {
+    if isEnabled {
+      enabledChallengeTypes.insert(type)
+    } else {
+      enabledChallengeTypes.remove(type)
+    }
+    saveEnabledChallengeTypes()
   }
   
   func addAllowedApp(_ bundleId: String) {

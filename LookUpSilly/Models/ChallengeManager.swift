@@ -5,11 +5,16 @@ class ChallengeManager: ObservableObject {
   @Published var showingChallenge = false
   @Published var targetApp: InstalledApp?
   
-  func requestAppAccess(app: InstalledApp, completion: @escaping (Bool) -> Void) {
+  func requestAppAccess(
+    app: InstalledApp,
+    enabledChallenges: Set<ChallengeType> = Set(ChallengeType.allCases),
+    completion: @escaping (Bool) -> Void
+  ) {
     targetApp = app
     
-    // Randomly select a challenge
-    let challengeType = ChallengeType.allCases.randomElement() ?? .math
+    // Randomly select a challenge from enabled types (fallback to all if empty)
+    let availableTypes = enabledChallenges.isEmpty ? Set(ChallengeType.allCases) : enabledChallenges
+    let challengeType = availableTypes.randomElement() ?? .math
     
     switch challengeType {
     case .math:
