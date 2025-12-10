@@ -12,6 +12,8 @@ struct SettingsViewNew: View {
   @State private var showingContributionSheet = false
   @State private var showingTestChallenges = false
   @State private var showingPauseDurationSheet = false
+  @State private var showingBlockingScheduleSheet = false
+  @State private var showingChallengeTypesSheet = false
   
   var body: some View {
     NavigationStack {
@@ -103,13 +105,39 @@ struct SettingsViewNew: View {
           .listRowBackground(colors.surface)
           
           Section {
-            NavigationLink {
-              ChallengeTypeSettingsView(
-                enabledTypes: Binding(
-                  get: { appSettings.enabledChallengeTypes },
-                  set: { appSettings.setEnabledChallengeTypes($0) }
-                )
-              )
+            Button {
+              showingBlockingScheduleSheet = true
+            } label: {
+              HStack {
+                Image(systemName: "calendar.badge.clock")
+                  .foregroundColor(colors.secondary)
+                  .font(.system(size: 24))
+                VStack(alignment: .leading, spacing: 4) {
+                  Text(NSLocalizedString("settings.schedule.row_title", comment: ""))
+                    .foregroundColor(colors.textPrimary)
+                    .font(.headline)
+                  Text(NSLocalizedString("settings.schedule.row_subtitle", comment: ""))
+                    .foregroundColor(colors.textSecondary)
+                    .font(.caption)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                  .foregroundColor(colors.textSecondary)
+              }
+            }
+            .buttonStyle(.plain)
+          } header: {
+            Text(NSLocalizedString("settings.schedule.section_title", comment: ""))
+              .foregroundColor(colors.textPrimary)
+          } footer: {
+            Text(NSLocalizedString("settings.schedule.section_footer", comment: ""))
+              .foregroundColor(colors.textSecondary)
+          }
+          .listRowBackground(colors.surface)
+          
+          Section {
+            Button {
+              showingChallengeTypesSheet = true
             } label: {
               HStack {
                 Image(systemName: "gamecontroller")
@@ -128,6 +156,7 @@ struct SettingsViewNew: View {
                   .foregroundColor(colors.textSecondary)
               }
             }
+            .buttonStyle(.plain)
           } header: {
             Text(NSLocalizedString("settings.challenge_types.section_title", comment: ""))
               .foregroundColor(colors.textPrimary)
@@ -144,10 +173,10 @@ struct SettingsViewNew: View {
                   .foregroundColor(colors.info)
                   .font(.system(size: 24))
                 VStack(alignment: .leading, spacing: 4) {
-                  Text("Cancel Button Delay")
+                  Text(NSLocalizedString("settings.skip_button_delay", comment: ""))
                     .foregroundColor(colors.textPrimary)
                     .font(.headline)
-                  Text("Show cancel button after \(appSettings.challengeCancelDelaySeconds) seconds")
+                  Text(String(format: NSLocalizedString("settings.skip_button_delay_description", comment: ""), appSettings.challengeCancelDelaySeconds))
                     .font(.caption)
                     .foregroundColor(colors.textSecondary)
                 }
@@ -155,6 +184,7 @@ struct SettingsViewNew: View {
               }
               
               Picker("", selection: $appSettings.challengeCancelDelaySeconds) {
+                Text("30").tag(30)
                 Text("60").tag(60)
                 Text("90").tag(90)
                 Text("120").tag(120)
@@ -163,10 +193,10 @@ struct SettingsViewNew: View {
               .pickerStyle(.segmented)
             }
           } header: {
-            Text("Challenge Settings")
+            Text(NSLocalizedString("settings.challenge_settings.section_title", comment: ""))
               .foregroundColor(colors.textPrimary)
           } footer: {
-            Text("Control when the cancel button appears in challenges. Always visible in Play for Fun mode.")
+            Text(NSLocalizedString("settings.skip_button_delay_footer", comment: ""))
               .foregroundColor(colors.textSecondary)
           }
           .listRowBackground(colors.surface)
@@ -185,8 +215,13 @@ struct SettingsViewNew: View {
                     .font(.caption)
                 }
                 Spacer()
-                Image(systemName: "checkmark.circle.fill")
+                Text(NSLocalizedString("contribution.badge", comment: ""))
                   .foregroundColor(colors.success)
+                  .font(.caption.bold())
+                  .padding(.horizontal, 10)
+                  .padding(.vertical, 6)
+                  .background(colors.success.opacity(0.15))
+                  .clipShape(Capsule())
               }
             } else {
               Button(action: {
@@ -385,25 +420,6 @@ struct SettingsViewNew: View {
             #endif
             
             Button(action: {
-              screenTimeManager.removeAllShields()
-            }) {
-              HStack {
-                Image(systemName: "shield.slash")
-                  .foregroundColor(colors.warning)
-                VStack(alignment: .leading, spacing: 4) {
-                  Text("Temporarily Disable All Shields")
-                    .foregroundColor(colors.textPrimary)
-                  Text("Removes shields until next app launch")
-                    .font(.caption)
-                    .foregroundColor(colors.textSecondary)
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                  .foregroundColor(colors.textSecondary)
-              }
-            }
-            
-            Button(action: {
               showingResetAlert = true
             }) {
               HStack {
@@ -472,6 +488,26 @@ struct SettingsViewNew: View {
         Text("This will reset all your challenge completion statistics and remove them from iCloud.")
       }
     }
+    .sheet(isPresented: $showingBlockingScheduleSheet) {
+      NavigationStack {
+        BlockingScheduleView()
+          .environmentObject(appSettings)
+      }
+      .presentationDetents([.medium, .large])
+      .presentationDragIndicator(.visible)
+    }
+    .sheet(isPresented: $showingChallengeTypesSheet) {
+      NavigationStack {
+        ChallengeTypeSettingsView(
+          enabledTypes: Binding(
+            get: { appSettings.enabledChallengeTypes },
+            set: { appSettings.setEnabledChallengeTypes($0) }
+          )
+        )
+      }
+      .presentationDetents([.medium, .large])
+      .presentationDragIndicator(.visible)
+    }
   }
   
   private func handlePauseStateChange(_ isPaused: Bool) {
@@ -508,6 +544,7 @@ struct InfoRow: View {
 
 struct ChallengeTypeSettingsView: View {
   @Environment(\.themeColors) private var colors
+  @Environment(\.dismiss) private var dismiss
   @Binding var enabledTypes: Set<ChallengeType>
   
   var body: some View {
@@ -544,6 +581,17 @@ struct ChallengeTypeSettingsView: View {
     .scrollContentBackground(.hidden)
     .background(colors.background.ignoresSafeArea())
     .navigationTitle(NSLocalizedString("settings.challenge_types.title", comment: ""))
+    .toolbar {
+      ToolbarItem(placement: .navigationBarTrailing) {
+        Button {
+          dismiss()
+        } label: {
+          Image(systemName: "xmark")
+            .font(.system(size: 16, weight: .bold))
+        }
+        .accessibilityLabel(Text(NSLocalizedString("common.close", comment: "")))
+      }
+    }
   }
   
   private func binding(for type: ChallengeType) -> Binding<Bool> {

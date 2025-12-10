@@ -13,8 +13,11 @@ class ScreenTimeManager: ObservableObject {
   @Published var blockedApps: FamilyActivitySelection = FamilyActivitySelection()
   @Published var allowedApps: FamilyActivitySelection = FamilyActivitySelection()
   
+  private var scheduleTimer: Timer?
+  
   private init() {
     checkAuthorizationStatus()
+    startScheduleTimer()
   }
   
   // MARK: - Authorization
@@ -59,6 +62,12 @@ class ScreenTimeManager: ObservableObject {
       return
     }
     
+    // If current hour isn't active, don't apply shields
+    if !isWithinActiveSchedule() {
+      removeAllShields()
+      return
+    }
+    
     // Shield blocked applications, except allowed ones
     if !allowedApps.applicationTokens.isEmpty {
       // If we have allowed apps, shield blocked apps except the allowed ones
@@ -87,6 +96,32 @@ class ScreenTimeManager: ObservableObject {
   
   func updateShielding() {
     applyShield()
+  }
+  
+  private func startScheduleTimer() {
+    scheduleTimer?.invalidate()
+    scheduleTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+      Task { @MainActor in
+        self?.applyShield()
+      }
+    }
+  }
+  
+  private func isWithinActiveSchedule(date: Date = Date()) -> Bool {
+    let currentHour = Calendar.current.component(.hour, from: date)
+    
+    guard let data = UserDefaults.standard.data(forKey: "activeBlockingHours"),
+          let decoded = try? JSONDecoder().decode([Int].self, from: data) else {
+      return true // Default: blocking is active all hours
+    }
+    
+    let hours = decoded.filter { (0...23).contains($0) }
+    let hourSet = Set(hours)
+    if hourSet.isEmpty {
+      return false
+    }
+    
+    return hourSet.contains(currentHour)
   }
   
   // MARK: - Temporary Access

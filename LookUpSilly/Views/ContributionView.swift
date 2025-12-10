@@ -18,6 +18,24 @@ struct ContributionView: View {
         contributionFormView
       }
     }
+    .safeAreaInset(edge: .top) {
+      HStack {
+        Spacer()
+        Button(action: {
+          onComplete()
+        }) {
+          Image(systemName: "xmark")
+            .font(.system(size: 16, weight: .bold))
+            .foregroundColor(colors.textPrimary)
+            .padding(10)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(NSLocalizedString("contribution.close", comment: "")))
+        .disabled(isProcessing)
+      }
+      .padding(.top, 8)
+      .padding(.trailing, 16)
+    }
   }
   
   var contributionFormView: some View {
@@ -32,32 +50,49 @@ struct ContributionView: View {
           .frame(width: 80, height: 80)
           .foregroundStyle(colors.premium.gradient)
         
-        Text("Support Look Up, Silly!")
+        Text(NSLocalizedString("contribution.title", comment: ""))
           .font(.system(size: 28, weight: .bold, design: .rounded))
           .foregroundColor(colors.textPrimary)
         
-        Text("Help us keep this app free forever")
+        Text(NSLocalizedString("contribution.subtitle", comment: ""))
           .font(.system(size: 16))
           .foregroundColor(colors.textSecondary)
           .multilineTextAlignment(.center)
       }
       
+      if revenueCat.hasContributed {
+        HStack(spacing: 10) {
+          Image(systemName: "checkmark.circle.fill")
+            .foregroundColor(colors.success)
+          Text(String(format: NSLocalizedString("contribution.thank_you_badge", comment: ""), revenueCat.contributionAmount ?? ""))
+            .foregroundColor(colors.success)
+            .font(.subheadline.weight(.semibold))
+        }
+        .padding(.horizontal, 20)
+      }
+      
       // Message
       VStack(alignment: .leading, spacing: 12) {
-        Text("To keep this app free and ad-free, we rely on generous contributions from users like you.")
+        Text(NSLocalizedString("contribution.body_primary", comment: ""))
           .font(.subheadline)
           .foregroundColor(colors.textPrimary)
           .multilineTextAlignment(.center)
         
-        Text("Your contribution helps us:")
+        Text(NSLocalizedString("contribution.body_secondary", comment: ""))
           .font(.subheadline.bold())
           .foregroundColor(colors.textPrimary)
         
-        ContributionBenefitRow(icon: "hammer", text: "Continue development")
-        ContributionBenefitRow(icon: "sparkles", text: "Add new features")
-        ContributionBenefitRow(icon: "heart.fill", text: "Keep it free for everyone")
+        ContributionBenefitRow(icon: "hammer", text: NSLocalizedString("contribution.benefit.development", comment: ""))
+        ContributionBenefitRow(icon: "sparkles", text: NSLocalizedString("contribution.benefit.features", comment: ""))
+        ContributionBenefitRow(icon: "heart.fill", text: NSLocalizedString("contribution.benefit.free", comment: ""))
       }
       .padding(.horizontal, 40)
+      
+      Text(NSLocalizedString("contribution.note_optional", comment: ""))
+        .font(.caption)
+        .foregroundColor(colors.textSecondary)
+        .multilineTextAlignment(.center)
+        .padding(.horizontal, 32)
       
       // Contribution Options
       VStack(spacing: 12) {
@@ -65,16 +100,17 @@ struct ContributionView: View {
           ContributionOptionButton(
             product: product,
             isSelected: selectedProduct == product,
-            isProcessing: isProcessing
+            isProcessing: isProcessing || revenueCat.isLoading,
+            isDisabled: revenueCat.hasContributed
           ) {
+            guard !revenueCat.hasContributed else { return }
             selectedProduct = product
-            Task {
-              await handleContribution(product)
-            }
+            Task { await handleContribution(product) }
           }
         }
       }
       .padding(.horizontal, 40)
+      .opacity(revenueCat.hasContributed ? 0.6 : 1.0)
       
       if let error = revenueCat.errorMessage {
         Text(error)
@@ -90,14 +126,14 @@ struct ContributionView: View {
       Button(action: {
         onComplete()
       }) {
-        Text("Maybe Later")
+        Text(NSLocalizedString("contribution.maybe_later", comment: ""))
           .font(.subheadline)
           .foregroundColor(colors.textSecondary)
       }
-      .disabled(isProcessing)
+      .disabled(isProcessing || revenueCat.isLoading)
       .padding(.bottom, 20)
       
-      Text("100% optional • One-time payment")
+      Text(NSLocalizedString("contribution.footer", comment: ""))
         .font(.caption)
         .foregroundColor(colors.textSecondary)
         .padding(.bottom, 40)
@@ -114,11 +150,11 @@ struct ContributionView: View {
         .frame(width: 100, height: 100)
         .foregroundStyle(.green.gradient)
       
-      Text("Thank You! 🎉")
+      Text(NSLocalizedString("contribution.thank_you_title", comment: ""))
         .font(.system(size: 36, weight: .bold, design: .rounded))
         .foregroundColor(colors.textPrimary)
       
-      Text("Your contribution helps keep\nLook Up, Silly! free for everyone")
+      Text(NSLocalizedString("contribution.thank_you_body", comment: ""))
         .font(.system(size: 16))
         .foregroundColor(colors.textSecondary)
         .multilineTextAlignment(.center)
@@ -129,7 +165,7 @@ struct ContributionView: View {
       Button(action: {
         onComplete()
       }) {
-        Text("Continue")
+        Text(NSLocalizedString("contribution.continue", comment: ""))
           .font(.headline)
           .foregroundColor(colors.textOnAccent)
           .frame(maxWidth: .infinity)
@@ -160,9 +196,12 @@ struct ContributionOptionButton: View {
   let product: RevenueCatManager.ContributionProduct
   let isSelected: Bool
   let isProcessing: Bool
+  let isDisabled: Bool
   let action: () -> Void
   
   var body: some View {
+    let buttonDisabled = isProcessing || isDisabled
+    
     Button(action: action) {
       HStack {
         VStack(alignment: .leading, spacing: 4) {
@@ -177,7 +216,11 @@ struct ContributionOptionButton: View {
         
         Spacer()
         
-        if isProcessing && isSelected {
+        if isDisabled {
+          Image(systemName: "checkmark.circle.fill")
+            .font(.title2)
+            .foregroundColor(colors.success)
+        } else if isProcessing && isSelected {
           ProgressView()
             .tint(colors.primary)
         } else {
@@ -187,14 +230,18 @@ struct ContributionOptionButton: View {
         }
       }
       .padding()
-      .background(isSelected && isProcessing ? colors.primary.opacity(0.3) : colors.primary.opacity(0.15))
+      .background(
+        isDisabled
+        ? colors.success.opacity(0.18)
+        : (isSelected && isProcessing ? colors.primary.opacity(0.3) : colors.primary.opacity(0.15))
+      )
       .cornerRadius(12)
       .overlay(
         RoundedRectangle(cornerRadius: 12)
-          .stroke(colors.primary, lineWidth: 2)
+          .stroke(isDisabled ? colors.success : colors.primary, lineWidth: 2)
       )
     }
-    .disabled(isProcessing)
+    .disabled(buttonDisabled)
   }
 }
 

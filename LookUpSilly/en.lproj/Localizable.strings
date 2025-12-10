@@ -10,6 +10,10 @@
 "onboarding.apps.title" = "Choose Allowed Apps";
 "onboarding.apps.subtitle" = "Select apps you can open freely.\nAll others will require a challenge.";
 "onboarding.apps.button" = "Continue";
+"onboarding.skip_delay.title" = "Skip Button Delay";
+"onboarding.skip_delay.subtitle" = "Pick how long the skip button stays hidden during challenges.";
+"onboarding.skip_delay.note" = "You can change this later in Settings.";
+"onboarding.skip_delay.button" = "Continue";
 
 "onboarding.ready.title" = "You're All Set!";
 "onboarding.ready.feature1" = "Allowed apps open instantly";
@@ -25,6 +29,10 @@
 "home.no_allowed_apps" = "No allowed apps yet. Add some in Settings.";
 "home.times_saved" = "Times Saved";
 "home.times_saved_subtitle" = "Challenges completed to stay focused";
+"home.times_saved_triggered" = "Challenges started";
+"home.times_saved_continued" = "Continued to apps";
+"home.days_range_option" = "%dd";
+"home.last_x_days" = "Last %d days";
 "home.last_7_days" = "Last 7 days";
 
 /* Settings */
@@ -36,9 +44,24 @@
 "settings.resume_challenges" = "Resume Challenges";
 "settings.challenges_paused" = "Challenges are paused";
 "settings.challenges_active" = "Challenges are active";
-"settings.cancel_button_delay" = "Cancel Button Delay";
-"settings.cancel_button_delay_description" = "Show cancel button after %d seconds";
-"settings.cancel_button_delay_footer" = "Control when the cancel button appears in challenges. Always visible in Play for Fun mode.";
+"settings.skip_button_delay" = "Skip Button Delay";
+"settings.skip_button_delay_description" = "Show skip button after %d seconds";
+"settings.skip_button_delay_footer" = "Control when the skip button appears in challenges. Always visible in Play for Fun mode.";
+"settings.challenge_settings.section_title" = "Challenge Settings";
+"settings.schedule.row_title" = "Blocking Schedule";
+"settings.schedule.row_subtitle" = "Select hours when blocking is active";
+"settings.schedule.section_title" = "Schedule";
+"settings.schedule.section_footer" = "Choose when challenges should apply.";
+"settings.schedule.title" = "Blocking Schedule";
+"settings.schedule.description" = "Select the hours when blocked apps require a challenge.";
+"settings.schedule.footer" = "Unselected hours let blocked apps open without challenges.";
+"settings.schedule.format_title" = "Time Format";
+"settings.schedule.format.24h" = "24-hour";
+"settings.schedule.format.ampm" = "AM/PM";
+"settings.schedule.grid_title" = "Hourly Access";
+"settings.schedule.grid_footer" = "Selected hours keep blocking active.";
+"settings.schedule.active" = "On";
+"settings.schedule.inactive" = "Off";
 
 /* Pause Duration */
 "pause.title" = "Pause Challenges";
@@ -71,6 +94,31 @@
 "challenge.type.colortap.description" = "Tap the named color before time runs out";
 "challenge.type.pathrecall.title" = "Path Recall";
 "challenge.type.pathrecall.description" = "Memorize and repeat the glowing path";
+
+"challenge.skip.button_ready" = "Skip challenge";
+"challenge.skip.button_countdown" = "Skip in %ds";
+"challenge.cancel" = "Cancel challenge";
+
+"contribution.close" = "Close";
+"common.close" = "Close";
+"contribution.title" = "Support Look Up, Silly!";
+"contribution.subtitle" = "Optional one-time contribution to keep the app free.";
+"contribution.body_primary" = "Contributions do not unlock features. They simply help cover costs so we can keep Look Up, Silly! free and ad-free.";
+"contribution.body_secondary" = "Your contribution helps us:";
+"contribution.benefit.development" = "Continue development";
+"contribution.benefit.features" = "Add new features";
+"contribution.benefit.free" = "Keep it free for everyone";
+"contribution.note_optional" = "100% optional • One-time contribution • No extra features unlocked";
+"contribution.maybe_later" = "Maybe Later";
+"contribution.footer" = "100% optional • One-time contribution";
+"contribution.thank_you_badge" = "Thanks for contributing %@";
+"contribution.thank_you_title" = "Thank You! 🎉";
+"contribution.thank_you_body" = "Your contribution helps keep\nLook Up, Silly! free for everyone";
+"contribution.continue" = "Continue";
+"contribution.skip_now" = "Continue without contributing";
+"contribution.continue_thanks" = "Continue";
+"contribution.already_contributed_message" = "You already contributed—thank you!";
+"contribution.badge" = "Contributor";
 
 "challenge.math.title" = "Math Challenge";
 "challenge.math.subtitle" = "Solve 5 problems to continue";
@@ -141,4 +189,12 @@
 "settings.challenge_types.description" = "Choose which challenges can appear when opening blocked apps.";
 "settings.challenge_types.note" = "Does not affect Play for Fun.";
 "settings.challenge_types.fallback" = "If all challenges are disabled, all challenges will be used by default.";
+"onboarding.howitworks.title" = "How the app works";
+"onboarding.howitworks.subtitle" = "Blocked apps ask you to complete a challenge before you can open them.";
+"onboarding.howitworks.step1" = "You block distracting apps in Settings.";
+"onboarding.howitworks.step2" = "Opening a blocked app shows a shield.";
+"onboarding.howitworks.step3" = "Open Look Up, Silly! and complete a challenge.";
+"onboarding.howitworks.step4" = "After completion, blocked apps are unlocked for 5 minutes.";
+"onboarding.howitworks.step5" = "If you skip the challenge, you’ll still get access after the delay you set.";
+"onboarding.howitworks.confirm" = "I understand";
 

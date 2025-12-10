@@ -118,6 +118,12 @@ public class RevenueCatManager: NSObject, ObservableObject {
   
   /// Purchase a contribution package
   public func contribute(product: ContributionProduct) async -> Bool {
+    // Prevent multiple contributions; RevenueCat entitlements are single-use for this context
+    if hasContributed {
+      errorMessage = NSLocalizedString("contribution.already_contributed_message", comment: "")
+      return false
+    }
+    
     isLoading = true
     errorMessage = nil
     

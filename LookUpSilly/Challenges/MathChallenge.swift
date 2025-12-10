@@ -103,37 +103,72 @@ struct MathChallengeView: View {
   @FocusState private var isInputFocused: Bool
   
   @State private var elapsedTime: TimeInterval = 0
+  @State private var hasRecordedStart = false
+  @State private var outcome: ChallengeOutcome = .pending
   
   private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
   
-  var showCancelButton: Bool {
-    challenge.isTestMode || elapsedTime >= TimeInterval(appSettings.challengeCancelDelaySeconds)
+  var skipDelayRemaining: Int {
+    guard !challenge.isTestMode else { return 0 }
+    let remaining = Int(ceil(max(0, TimeInterval(appSettings.challengeCancelDelaySeconds) - elapsedTime)))
+    return max(0, remaining)
+  }
+  
+  var canSkip: Bool {
+    skipDelayRemaining == 0
+  }
+  
+  var skipButtonTitle: String {
+    if canSkip {
+      return NSLocalizedString("challenge.skip.button_ready", comment: "")
+    } else {
+      return String(format: NSLocalizedString("challenge.skip.button_countdown", comment: ""), skipDelayRemaining)
+    }
   }
   
   var body: some View {
     ScrollView {
       VStack(spacing: 16) {
-        // Cancel button
-        HStack {
+        // Controls
+        HStack(spacing: 10) {
           Spacer()
-          if showCancelButton {
-            Button(action: {
-              if let cancelAction = challengeCancelAction {
-                cancelAction()
-              }
-              dismiss()
-            }) {
-              Image(systemName: "xmark.circle.fill")
-                .font(.system(size: 28))
-                .foregroundColor(colors.textSecondary)
-            }
-            .padding(.trailing, 20)
-            .padding(.top, 20)
-            .transition(.opacity)
+          Button {
+            cancelChallenge()
+          } label: {
+            Image(systemName: "xmark")
+              .font(.system(size: 16, weight: .bold))
+              .foregroundColor(colors.textSecondary)
+              .padding(10)
+              .background(colors.surface.opacity(0.7), in: Circle())
           }
+          .accessibilityLabel(Text(NSLocalizedString("challenge.cancel", comment: "")))
+          
+          Button(action: {
+            skipChallenge()
+          }) {
+            HStack(spacing: 6) {
+              Image(systemName: "xmark.circle.fill")
+                .font(.system(size: 20, weight: .semibold))
+              Text(skipButtonTitle)
+                .font(.footnote.weight(.semibold))
+            }
+            .foregroundColor(canSkip ? colors.textSecondary : colors.textDisabled)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+              Capsule()
+                .fill(colors.surface.opacity(0.8))
+                .overlay(
+                  Capsule()
+                    .stroke(colors.divider, lineWidth: 1)
+                )
+            )
+          }
+          .padding(.trailing, 20)
+          .padding(.top, 20)
+          .disabled(!canSkip)
         }
-        .frame(height: showCancelButton ? nil : 0)
-        .opacity(showCancelButton ? 1 : 0)
+        .frame(height: 40)
         
         // Header
         VStack(spacing: 8) {
@@ -221,22 +256,60 @@ struct MathChallengeView: View {
     }
     .scrollDismissesKeyboard(.interactively)
     .background(colors.background.ignoresSafeArea())
-    .interactiveDismissDisabled(!showCancelButton)
+    .interactiveDismissDisabled(!canSkip)
     .presentationDetents([.large])
     .presentationDragIndicator(.hidden)
     .onAppear {
       isInputFocused = true
+      recordStartIfNeeded()
     }
     .onReceive(timer) { _ in
       elapsedTime += 1
     }
     .onChange(of: challenge.isCompleted) { _, completed in
       if completed {
+        outcome = .continued
+        ChallengeStatsManager.shared.recordChallengeCompleted(type: .math, isTestMode: challenge.isTestMode)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
           onComplete()
         }
       }
     }
+    .onDisappear {
+      if outcome == .pending {
+        ChallengeStatsManager.shared.recordChallengeCancelled(type: .math, isTestMode: challenge.isTestMode)
+      }
+    }
+  }
+}
+
+private enum ChallengeOutcome {
+  case pending
+  case continued
+  case cancelled
+}
+
+private extension MathChallengeView {
+  func recordStartIfNeeded() {
+    guard !hasRecordedStart else { return }
+    hasRecordedStart = true
+    ChallengeStatsManager.shared.recordChallengeTriggered(type: .math, isTestMode: challenge.isTestMode)
+  }
+  
+  func skipChallenge() {
+    guard canSkip else { return }
+    outcome = .continued
+    ChallengeStatsManager.shared.recordChallengeContinued(type: .math, isTestMode: challenge.isTestMode)
+    if let cancelAction = challengeCancelAction {
+      cancelAction()
+    }
+    dismiss()
+  }
+  
+  func cancelChallenge() {
+    outcome = .cancelled
+    ChallengeStatsManager.shared.recordChallengeCancelled(type: .math, isTestMode: challenge.isTestMode)
+    dismiss()
   }
 }
 

@@ -17,12 +17,15 @@ struct PauseDurationSheet: View {
   }
   
   var body: some View {
-    ZStack {
-      // Dismiss area - tapping outside resumes challenges
-      dismissArea
-      
-      // Floating picker card
-      pickerCard
+    GeometryReader { proxy in
+      ZStack {
+        // Dismiss area - tapping outside resumes challenges
+        dismissArea
+        
+        // Floating picker card
+        pickerCard(maxHeight: proxy.size.height)
+      }
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
   }
   
@@ -38,10 +41,10 @@ struct PauseDurationSheet: View {
       }
   }
   
-  private var pickerCard: some View {
-    VStack(spacing: 30) {
+  private func pickerCard(maxHeight: CGFloat) -> some View {
+    VStack(spacing: 24) {
         // Header
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
           Image(systemName: isPaused ? "clock.fill" : "pause.circle.fill")
             .font(.system(size: 60))
             .foregroundStyle(isPaused ? colors.success.gradient : colors.warning.gradient)
@@ -78,7 +81,7 @@ struct PauseDurationSheet: View {
         .padding(.top, 40)
         
         // Duration buttons section
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
           // Description text
           Text(isPaused ? "Extend your break" : "Choose duration")
             .font(.subheadline)
@@ -129,7 +132,7 @@ struct PauseDurationSheet: View {
         }
         .padding(.horizontal, 20)
         
-        Spacer()
+        Spacer(minLength: 12)
         
         // Bottom button - only show resume when paused
         if isPaused {
@@ -159,8 +162,24 @@ struct PauseDurationSheet: View {
       )
       .clipShape(RoundedRectangle(cornerRadius: 20))
       .frame(maxWidth: 400)
+      .frame(maxHeight: maxHeight * 0.75)
+      .overlay(alignment: .topTrailing) {
+        Button(action: {
+          withAnimation(.easeOut(duration: 0.15)) {
+            isPresented = false
+          }
+        }) {
+          Image(systemName: "xmark")
+            .font(.system(size: 16, weight: .semibold))
+            .foregroundColor(colors.textSecondary)
+            .padding(10)
+            .background(.ultraThinMaterial, in: Circle())
+        }
+        .buttonStyle(.plain)
+        .padding(12)
+      }
       .padding(.horizontal, 20)
-      .padding(.vertical, 50)
+      .padding(.vertical, 36)
   }
   
   // MARK: - Actions
