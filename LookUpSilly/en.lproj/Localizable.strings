@@ -190,13 +190,19 @@
 "settings.challenge_types.description" = "Choose which challenges can appear when opening blocked apps.";
 "settings.challenge_types.note" = "Does not affect Play for Fun.";
 "settings.challenge_types.fallback" = "If all challenges are disabled, all challenges will be used by default.";
-"onboarding.howitworks.title" = "How the app works";
-"onboarding.howitworks.subtitle" = "Blocked apps ask you to complete a challenge before you can open them.";
+"onboarding.howitworks.title" = "How It Works";
+"onboarding.howitworks.subtitle" = "A simple system to help you be more intentional with your time.";
 "onboarding.howitworks.step1" = "You block distracting apps in Settings.";
 "onboarding.howitworks.step2" = "Opening a blocked app shows a shield with \"Open Challenge\" button.";
 "onboarding.howitworks.step3" = "Tap the button and complete a quick challenge.";
 "onboarding.howitworks.step4" = "After completion, all blocked apps unlock for your set duration.";
 "onboarding.howitworks.step5" = "If you skip the challenge, you’ll still get access after the delay you set.";
+"onboarding.howitworks.step1.title" = "Block Distracting Apps";
+"onboarding.howitworks.step1.description" = "Choose which apps require a challenge before opening.";
+"onboarding.howitworks.step2.title" = "Complete a Challenge";
+"onboarding.howitworks.step2.description" = "When you open a blocked app, solve a quick puzzle to continue.";
+"onboarding.howitworks.step3.title" = "Apps Unlock";
+"onboarding.howitworks.step3.description" = "All blocked apps become accessible for the duration you set.";
 "onboarding.howitworks.confirm" = "I understand";
 
 /* Settings - About Section */

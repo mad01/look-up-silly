@@ -7,12 +7,10 @@ options:
   developmentLanguage: en
   knownRegions:
     - en
-
 packages:
   RevenueCat:
     url: https://github.com/RevenueCat/purchases-ios.git
     from: 5.41.0
-
 targets:
   LookUpSilly:
     type: application
@@ -44,7 +42,11 @@ targets:
       - package: RevenueCat
         product: RevenueCat
       - target: ShieldConfiguration
+        embed: true
+        codeSign: true
       - target: ShieldAction
+        embed: true
+        codeSign: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.lookupsilly.app
@@ -62,14 +64,13 @@ targets:
           SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
         Release:
           SWIFT_COMPILATION_MODE: wholemodule
-    
     info:
       path: LookUpSilly/Info.plist
       properties:
         CFBundleDisplayName: Look Up, Silly!
         CFBundleName: Look Up, Silly!
         CFBundleShortVersionString: "1.0.0"
-        CFBundleVersion: "2"
+        CFBundleVersion: "5"
         LSRequiresIPhoneOS: true
         LSApplicationCategoryType: public.app-category.productivity
         LSApplicationSecondaryCategoryType: public.app-category.utilities
@@ -82,7 +83,6 @@ targets:
           - CFBundleURLName: com.lookupsilly.app
             CFBundleURLSchemes:
               - lookupsilly
-
   ShieldConfiguration:
     type: app-extension
     platform: iOS
@@ -101,6 +101,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.lookupsilly.app.ShieldConfiguration
         DEVELOPMENT_TEAM: 7U8RP38YWZ
         CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION: YES
         SWIFT_VERSION: "6.0"
         IPHONEOS_DEPLOYMENT_TARGET: "26.0"
         SKIP_INSTALL: YES
@@ -113,11 +114,10 @@ targets:
       path: ShieldConfiguration/Info.plist
       properties:
         CFBundleShortVersionString: "1.0.0"
-        CFBundleVersion: "2"
+        CFBundleVersion: "5"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.ManagedSettingsUI.ShieldConfigurationDataSource
           NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShieldConfigurationExtension
-
   ShieldAction:
     type: app-extension
     platform: iOS
@@ -136,6 +136,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.lookupsilly.app.ShieldAction
         DEVELOPMENT_TEAM: 7U8RP38YWZ
         CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION: YES
         SWIFT_VERSION: "6.0"
         IPHONEOS_DEPLOYMENT_TARGET: "26.0"
         SKIP_INSTALL: YES
@@ -148,11 +149,10 @@ targets:
       path: ShieldAction/Info.plist
       properties:
         CFBundleShortVersionString: "1.0.0"
-        CFBundleVersion: "2"
+        CFBundleVersion: "5"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.ManagedSettingsUI.ShieldActionDelegate
           NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShieldActionExtension
-
 schemes:
   LookUpSilly:
     build:
@@ -164,4 +164,3 @@ schemes:
       config: Debug
     test:
       config: Debug
-

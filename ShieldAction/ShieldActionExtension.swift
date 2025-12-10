@@ -1,29 +1,19 @@
 import Foundation
 import ManagedSettings
 import ManagedSettingsUI
+import os.log
+
+private let logger = Logger(subsystem: "com.lookupsilly.app.ShieldAction", category: "Action")
 
 /// Handles button taps on the shield view
-class ShieldActionExtension: ShieldActionDelegate {
+final class ShieldActionExtension: ShieldActionDelegate {
   
   override func handle(
     action: ShieldAction,
     for application: ApplicationToken,
     completionHandler: @escaping (ShieldActionResponse) -> Void
   ) {
-    switch action {
-    case .primaryButtonPressed:
-      // Open main app with deep link to start challenge
-      openMainAppForChallenge()
-      // Close the shield (app will re-shield if challenge not completed)
-      completionHandler(.close)
-      
-    case .secondaryButtonPressed:
-      // User chose "Not Now" - just close the shield without opening app
-      completionHandler(.close)
-      
-    @unknown default:
-      completionHandler(.close)
-    }
+    handleAction(action, completionHandler: completionHandler)
   }
   
   override func handle(
@@ -31,17 +21,7 @@ class ShieldActionExtension: ShieldActionDelegate {
     for webDomain: WebDomainToken,
     completionHandler: @escaping (ShieldActionResponse) -> Void
   ) {
-    switch action {
-    case .primaryButtonPressed:
-      openMainAppForChallenge()
-      completionHandler(.close)
-      
-    case .secondaryButtonPressed:
-      completionHandler(.close)
-      
-    @unknown default:
-      completionHandler(.close)
-    }
+    handleAction(action, completionHandler: completionHandler)
   }
   
   override func handle(
@@ -49,9 +29,16 @@ class ShieldActionExtension: ShieldActionDelegate {
     for category: ActivityCategoryToken,
     completionHandler: @escaping (ShieldActionResponse) -> Void
   ) {
+    handleAction(action, completionHandler: completionHandler)
+  }
+  
+  private func handleAction(_ action: ShieldAction, completionHandler: @escaping (ShieldActionResponse) -> Void) {
+    logger.info("🎬 ShieldActionExtension: handleAction called, action=\(String(describing: action))")
     switch action {
     case .primaryButtonPressed:
-      openMainAppForChallenge()
+      // Mark that we need to show a challenge when app opens
+      UserDefaults.shared.set(true, forKey: "pendingShieldChallenge")
+      UserDefaults.shared.synchronize()
       completionHandler(.close)
       
     case .secondaryButtonPressed:
@@ -59,21 +46,6 @@ class ShieldActionExtension: ShieldActionDelegate {
       
     @unknown default:
       completionHandler(.close)
-    }
-  }
-  
-  private func openMainAppForChallenge() {
-    // Mark that we need to show a challenge when app opens
-    UserDefaults.shared.set(true, forKey: "pendingShieldChallenge")
-    UserDefaults.shared.synchronize()
-    
-    // Open main app via URL scheme
-    // Note: Extensions have limited ability to open URLs, but we can try
-    // The main app will also check for pendingShieldChallenge on launch
-    if let url = URL(string: "\(SharedConstants.urlScheme)://challenge") {
-      // Extensions can't directly open URLs, but the flag in UserDefaults
-      // will be checked when user manually opens the app
-      _ = url // Silence unused warning
     }
   }
 }

@@ -250,7 +250,7 @@ struct OnboardingViewNew: View {
   
   var howItWorksConfirmPage: some View {
     ScrollView {
-      VStack(spacing: 20) {
+      VStack(spacing: 24) {
         HStack {
           backButton(to: 2)
           Spacer()
@@ -270,20 +270,25 @@ struct OnboardingViewNew: View {
             .padding(.horizontal, 40)
         }
         
-        VStack(alignment: .leading, spacing: 12) {
-          InfoRow(number: "1", text: NSLocalizedString("onboarding.howitworks.step1", comment: ""))
-          InfoRow(number: "2", text: NSLocalizedString("onboarding.howitworks.step2", comment: ""))
-          InfoRow(number: "3", text: NSLocalizedString("onboarding.howitworks.step3", comment: ""))
-          InfoRow(number: "4", text: NSLocalizedString("onboarding.howitworks.step4", comment: ""))
-          InfoRow(number: "5", text: NSLocalizedString("onboarding.howitworks.step5", comment: ""))
+        VStack(spacing: 16) {
+          HowItWorksStep(
+            icon: "shield.fill",
+            title: NSLocalizedString("onboarding.howitworks.step1.title", comment: ""),
+            description: NSLocalizedString("onboarding.howitworks.step1.description", comment: "")
+          )
+          
+          HowItWorksStep(
+            icon: "puzzlepiece.fill",
+            title: NSLocalizedString("onboarding.howitworks.step2.title", comment: ""),
+            description: NSLocalizedString("onboarding.howitworks.step2.description", comment: "")
+          )
+          
+          HowItWorksStep(
+            icon: "lock.open.fill",
+            title: NSLocalizedString("onboarding.howitworks.step3.title", comment: ""),
+            description: NSLocalizedString("onboarding.howitworks.step3.description", comment: "")
+          )
         }
-        .padding()
-        .background(colors.surface)
-        .cornerRadius(16)
-        .overlay(
-          RoundedRectangle(cornerRadius: 16)
-            .stroke(colors.divider, lineWidth: 1)
-        )
         .padding(.horizontal, 20)
         
         Button(action: {
@@ -500,6 +505,44 @@ struct FeatureRowNew: View {
         .font(.system(size: 16))
         .foregroundColor(colors.textPrimary)
     }
+  }
+}
+
+struct HowItWorksStep: View {
+  @Environment(\.themeColors) private var colors
+  let icon: String
+  let title: String
+  let description: String
+  
+  var body: some View {
+    HStack(alignment: .top, spacing: 16) {
+      Image(systemName: icon)
+        .font(.system(size: 28))
+        .foregroundColor(colors.primary)
+        .frame(width: 50, height: 50)
+        .background(colors.primary.opacity(0.15))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+      
+      VStack(alignment: .leading, spacing: 4) {
+        Text(title)
+          .font(.system(size: 17, weight: .semibold))
+          .foregroundColor(colors.textPrimary)
+        
+        Text(description)
+          .font(.system(size: 15))
+          .foregroundColor(colors.textSecondary)
+          .fixedSize(horizontal: false, vertical: true)
+      }
+      
+      Spacer(minLength: 0)
+    }
+    .padding(16)
+    .background(colors.surface)
+    .cornerRadius(16)
+    .overlay(
+      RoundedRectangle(cornerRadius: 16)
+        .stroke(colors.divider, lineWidth: 1)
+    )
   }
 }
 

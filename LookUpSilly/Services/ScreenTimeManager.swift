@@ -9,15 +9,50 @@ class ScreenTimeManager: ObservableObject {
   private let center = AuthorizationCenter.shared
   private let store = ManagedSettingsStore()
   
+  // UserDefaults keys for persistence
+  private static let blockedAppsKey = "blockedAppsSelection"
+  private static let allowedAppsKey = "allowedAppsSelection"
+  
   @Published var isAuthorized = false
-  @Published var blockedApps: FamilyActivitySelection = FamilyActivitySelection()
-  @Published var allowedApps: FamilyActivitySelection = FamilyActivitySelection()
+  @Published var blockedApps: FamilyActivitySelection = FamilyActivitySelection() {
+    didSet { saveBlockedApps() }
+  }
+  @Published var allowedApps: FamilyActivitySelection = FamilyActivitySelection() {
+    didSet { saveAllowedApps() }
+  }
   
   private var scheduleTimer: Timer?
   
   private init() {
     checkAuthorizationStatus()
+    loadSavedSelections()
     startScheduleTimer()
+    // Apply shields on init if we have saved selections
+    applyShield()
+  }
+  
+  // MARK: - Persistence
+  
+  private func saveBlockedApps() {
+    guard let data = try? JSONEncoder().encode(blockedApps) else { return }
+    UserDefaults.shared.set(data, forKey: Self.blockedAppsKey)
+  }
+  
+  private func saveAllowedApps() {
+    guard let data = try? JSONEncoder().encode(allowedApps) else { return }
+    UserDefaults.shared.set(data, forKey: Self.allowedAppsKey)
+  }
+  
+  private func loadSavedSelections() {
+    if let data = UserDefaults.shared.data(forKey: Self.blockedAppsKey),
+       let selection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+      blockedApps = selection
+    }
+    
+    if let data = UserDefaults.shared.data(forKey: Self.allowedAppsKey),
+       let selection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+      allowedApps = selection
+    }
   }
   
   // MARK: - Authorization
@@ -43,16 +78,19 @@ class ScreenTimeManager: ObservableObject {
   
   func setBlockedApps(_ selection: FamilyActivitySelection) {
     blockedApps = selection
+    logSelections(context: "setBlockedApps")
     applyShield()
   }
   
   func setAllowedApps(_ selection: FamilyActivitySelection) {
     allowedApps = selection
+    logSelections(context: "setAllowedApps")
     // Note: We shield everything EXCEPT allowed apps
     applyShield()
   }
   
   private func applyShield() {
+    logSelections(context: "applyShield-start")
     // Check if challenges are paused
     let challengesPaused = UserDefaults.standard.bool(forKey: "challengesPaused")
     
@@ -87,6 +125,15 @@ class ScreenTimeManager: ObservableObject {
     } else {
       store.shield.applicationCategories = nil
     }
+    logSelections(context: "applyShield-end")
+  }
+
+  private func logSelections(context: String) {
+    let blockedCount = blockedApps.applicationTokens.count
+    let allowedCount = allowedApps.applicationTokens.count
+    let blockedCategories = blockedApps.categoryTokens.count
+    let allowedCategories = allowedApps.categoryTokens.count
+    print("🛡️ ScreenTimeManager [\(context)] blockedApps=\(blockedCount) allowedApps=\(allowedCount) blockedCategories=\(blockedCategories) allowedCategories=\(allowedCategories)")
   }
   
   func removeAllShields() {
