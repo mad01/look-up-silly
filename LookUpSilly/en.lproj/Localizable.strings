@@ -193,9 +193,38 @@
 "onboarding.howitworks.title" = "How the app works";
 "onboarding.howitworks.subtitle" = "Blocked apps ask you to complete a challenge before you can open them.";
 "onboarding.howitworks.step1" = "You block distracting apps in Settings.";
-"onboarding.howitworks.step2" = "Opening a blocked app shows a shield.";
-"onboarding.howitworks.step3" = "Open Look Up, Silly! and complete a challenge.";
-"onboarding.howitworks.step4" = "After completion, blocked apps are unlocked for 5 minutes.";
+"onboarding.howitworks.step2" = "Opening a blocked app shows a shield with \"Open Challenge\" button.";
+"onboarding.howitworks.step3" = "Tap the button and complete a quick challenge.";
+"onboarding.howitworks.step4" = "After completion, all blocked apps unlock for your set duration.";
 "onboarding.howitworks.step5" = "If you skip the challenge, you’ll still get access after the delay you set.";
 "onboarding.howitworks.confirm" = "I understand";
+
+/* Settings - About Section */
+"settings.about" = "About";
+"settings.version" = "Version";
+"settings.privacy_policy" = "Privacy Policy";
+"settings.terms_of_service" = "Terms of Service";
+
+/* Settings - Re-run Onboarding */
+"settings.rerun_onboarding.title" = "Re-run Onboarding";
+"settings.rerun_onboarding.subtitle" = "Go through setup again";
+"settings.rerun_onboarding.alert.title" = "Re-run Onboarding?";
+"settings.rerun_onboarding.alert.message" = "This will take you through the onboarding flow again. Your blocked apps and settings will be kept.";
+"settings.rerun_onboarding.alert.confirm" = "Continue";
+
+/* Settings - Unlock Duration */
+"settings.unlock_duration.row_title" = "Unlock Duration";
+"settings.unlock_duration.row_subtitle" = "Time apps stay unlocked after challenge";
+"settings.unlock_duration.title" = "Unlock Duration";
+"settings.unlock_duration.description" = "How long blocked apps stay unlocked after completing a challenge.";
+"settings.unlock_duration.minutes" = "%d minutes";
+
+/* Shield Challenge */
+"shield.challenge.success.title" = "Challenge Complete!";
+"shield.challenge.success.subtitle" = "Your apps are unlocked for %d minutes. Enjoy!";
+"shield.challenge.success.continue" = "Continue to App";
+"shield.title" = "Time to Look Up!";
+"shield.subtitle" = "Complete a quick challenge to unlock this app";
+"shield.button.open_challenge" = "Open Challenge";
+"shield.button.not_now" = "Not Now";
 

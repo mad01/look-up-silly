@@ -17,7 +17,7 @@ public class RevenueCatManager: NSObject, ObservableObject {
   // MARK: - Configuration
   
   // TODO: Replace with your actual RevenueCat Public API key
-  private let apiKey = "YOUR_REVENUECAT_API_KEY_HERE"
+  private let apiKey = "appl_SdscLUrvSrwaWYvQNOeWfpHBGPi"
   
   // Product identifiers for one-time contributions
   public enum ContributionProduct: String, CaseIterable {
@@ -51,8 +51,10 @@ public class RevenueCatManager: NSObject, ObservableObject {
     super.init()
   }
   
-  /// Configure RevenueCat SDK
-  public func configure() {
+  /// Configure RevenueCat SDK - must be called before any purchase attempts
+  /// This method is nonisolated because Purchases.configure() is thread-safe
+  /// and should be called synchronously at app launch
+  nonisolated public func configure() {
     guard apiKey != "YOUR_REVENUECAT_API_KEY_HERE" else {
       print("⚠️ RevenueCat: API key not configured. Contribution features disabled.")
       return
@@ -64,9 +66,9 @@ public class RevenueCatManager: NSObject, ObservableObject {
     
     print("✅ RevenueCat configured successfully")
     
-    // Check initial contribution status
-    Task {
-      await refreshContributionStatus()
+    // Check initial contribution status on main actor
+    Task { @MainActor in
+      await self.refreshContributionStatus()
     }
   }
   

@@ -24,6 +24,10 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
+    // Configure RevenueCat synchronously before any UI is presented
+    // This ensures Purchases.shared is available when attempting purchases
+    RevenueCatManager.shared.configure()
+    
     // Update quick actions on launch
     updateQuickActions()
     return true

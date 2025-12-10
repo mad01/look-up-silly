@@ -23,6 +23,7 @@ targets:
         excludes:
           - "**/*.md"
           - "**/Preview Content"
+      - path: Shared
     resources:
       - path: LookUpSilly/Assets.xcassets
       - path: LookUpSilly/en.lproj
@@ -37,9 +38,13 @@ targets:
         com.apple.developer.icloud-services:
           - CloudKit
           - CloudDocuments
+        com.apple.security.application-groups:
+          - group.com.lookupsilly.app
     dependencies:
       - package: RevenueCat
         product: RevenueCat
+      - target: ShieldConfiguration
+      - target: ShieldAction
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.lookupsilly.app
@@ -73,12 +78,88 @@ targets:
           - UIInterfaceOrientationPortrait
         UIUserInterfaceStyle: Dark
         NSFamilyControlsUsageDescription: Look Up, Silly! needs Screen Time access to block distracting apps and help you stay focused.
+        CFBundleURLTypes:
+          - CFBundleURLName: com.lookupsilly.app
+            CFBundleURLSchemes:
+              - lookupsilly
+
+  ShieldConfiguration:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: ShieldConfiguration
+      - path: Shared
+    entitlements:
+      path: ShieldConfiguration/ShieldConfiguration.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups:
+          - group.com.lookupsilly.app
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.lookupsilly.app.ShieldConfiguration
+        DEVELOPMENT_TEAM: 7U8RP38YWZ
+        CODE_SIGN_STYLE: Automatic
+        SWIFT_VERSION: "6.0"
+        IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+        SKIP_INSTALL: YES
+      configs:
+        Debug:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+        Release:
+          SWIFT_COMPILATION_MODE: wholemodule
+    info:
+      path: ShieldConfiguration/Info.plist
+      properties:
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "2"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.ManagedSettingsUI.ShieldConfigurationDataSource
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShieldConfigurationExtension
+
+  ShieldAction:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: ShieldAction
+      - path: Shared
+    entitlements:
+      path: ShieldAction/ShieldAction.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups:
+          - group.com.lookupsilly.app
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.lookupsilly.app.ShieldAction
+        DEVELOPMENT_TEAM: 7U8RP38YWZ
+        CODE_SIGN_STYLE: Automatic
+        SWIFT_VERSION: "6.0"
+        IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+        SKIP_INSTALL: YES
+      configs:
+        Debug:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+        Release:
+          SWIFT_COMPILATION_MODE: wholemodule
+    info:
+      path: ShieldAction/Info.plist
+      properties:
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "2"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.ManagedSettingsUI.ShieldActionDelegate
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShieldActionExtension
 
 schemes:
   LookUpSilly:
     build:
       targets:
         LookUpSilly: all
+        ShieldConfiguration: all
+        ShieldAction: all
     run:
       config: Debug
     test:

@@ -9,11 +9,19 @@ struct SettingsViewNew: View {
   @StateObject private var statsManager = ChallengeStatsManager.shared
   @State private var showingResetAlert = false
   @State private var showingResetStatsAlert = false
+  @State private var showingOnboardingAlert = false
   @State private var showingContributionSheet = false
   @State private var showingTestChallenges = false
   @State private var showingPauseDurationSheet = false
   @State private var showingBlockingScheduleSheet = false
   @State private var showingChallengeTypesSheet = false
+  @State private var showingUnlockDurationSheet = false
+  
+  // Unlock duration stored in shared UserDefaults for extensions
+  @State private var unlockDurationMinutes: Int = {
+    let stored = UserDefaults.shared.integer(forKey: SharedConstants.UserDefaultsKeys.pauseDurationMinutes)
+    return stored > 0 ? stored : SharedConstants.defaultPauseDurationMinutes
+  }()
   
   var body: some View {
     NavigationStack {
@@ -192,11 +200,40 @@ struct SettingsViewNew: View {
               }
               .pickerStyle(.segmented)
             }
+            
+            VStack(alignment: .leading, spacing: 12) {
+              HStack {
+                Image(systemName: "timer")
+                  .foregroundColor(colors.success)
+                  .font(.system(size: 24))
+                VStack(alignment: .leading, spacing: 4) {
+                  Text(NSLocalizedString("settings.unlock_duration.row_title", comment: ""))
+                    .foregroundColor(colors.textPrimary)
+                    .font(.headline)
+                  Text(String(format: NSLocalizedString("settings.unlock_duration.minutes", comment: ""), unlockDurationMinutes))
+                    .font(.caption)
+                    .foregroundColor(colors.textSecondary)
+                }
+                Spacer()
+              }
+              
+              Picker("", selection: $unlockDurationMinutes) {
+                Text("3").tag(3)
+                Text("5").tag(5)
+                Text("10").tag(10)
+                Text("15").tag(15)
+                Text("30").tag(30)
+              }
+              .pickerStyle(.segmented)
+              .onChange(of: unlockDurationMinutes) { _, newValue in
+                UserDefaults.shared.set(newValue, forKey: SharedConstants.UserDefaultsKeys.pauseDurationMinutes)
+              }
+            }
           } header: {
             Text(NSLocalizedString("settings.challenge_settings.section_title", comment: ""))
               .foregroundColor(colors.textPrimary)
           } footer: {
-            Text(NSLocalizedString("settings.skip_button_delay_footer", comment: ""))
+            Text(NSLocalizedString("settings.unlock_duration.description", comment: ""))
               .foregroundColor(colors.textSecondary)
           }
           .listRowBackground(colors.surface)
@@ -265,19 +302,19 @@ struct SettingsViewNew: View {
               VStack(alignment: .leading, spacing: 12) {
                 InfoRow(
                   number: "1",
-                  text: "Blocked apps will show a shield when you try to open them"
+                  text: "Blocked apps show a shield with \"Open Challenge\" button"
                 )
                 InfoRow(
                   number: "2",
-                  text: "Open Look Up, Silly! and complete a challenge"
+                  text: "Tap the button to open Look Up, Silly! and complete a challenge"
                 )
                 InfoRow(
                   number: "3",
-                  text: "All blocked apps unlock for 5 minutes"
+                  text: "All blocked apps unlock for \(unlockDurationMinutes) minutes"
                 )
                 InfoRow(
                   number: "4",
-                  text: "After 5 minutes, protection reactivates"
+                  text: "After \(unlockDurationMinutes) minutes, protection reactivates"
                 )
               }
               .foregroundColor(colors.textSecondary)
@@ -379,6 +416,42 @@ struct SettingsViewNew: View {
           .listRowBackground(colors.surface)
           
           Section {
+            HStack {
+              Text(NSLocalizedString("settings.version", comment: ""))
+                .foregroundColor(colors.textPrimary)
+              Spacer()
+              Text("1.0.0")
+                .foregroundColor(colors.textSecondary)
+            }
+            
+            Link(destination: URL(string: "https://dropbrain.io/lookupsilly/privacy_policy.html")!) {
+              HStack {
+                Text(NSLocalizedString("settings.privacy_policy", comment: ""))
+                  .foregroundColor(colors.textPrimary)
+                Spacer()
+                Image(systemName: "arrow.up.right")
+                  .font(.caption)
+                  .foregroundColor(colors.textSecondary)
+              }
+            }
+            
+            Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
+              HStack {
+                Text(NSLocalizedString("settings.terms_of_service", comment: ""))
+                  .foregroundColor(colors.textPrimary)
+                Spacer()
+                Image(systemName: "arrow.up.right")
+                  .font(.caption)
+                  .foregroundColor(colors.textSecondary)
+              }
+            }
+          } header: {
+            Text(NSLocalizedString("settings.about", comment: ""))
+              .foregroundColor(colors.textPrimary)
+          }
+          .listRowBackground(colors.surface)
+          
+          Section {
             #if DEBUG
             Button(action: {
               showingTestChallenges = true
@@ -417,7 +490,52 @@ struct SettingsViewNew: View {
                   .foregroundColor(colors.textSecondary)
               }
             }
+            
+            Toggle(isOn: Binding(
+              get: { revenueCat.hasContributed },
+              set: { newValue in
+                UserDefaults.standard.set(newValue, forKey: "hasContributed")
+                if newValue {
+                  UserDefaults.standard.set("$0 (Test)", forKey: "contributionAmount")
+                } else {
+                  UserDefaults.standard.removeObject(forKey: "contributionAmount")
+                }
+                Task { await revenueCat.refreshContributionStatus() }
+              }
+            )) {
+              HStack {
+                Image(systemName: "creditcard.circle")
+                  .foregroundColor(colors.success)
+                VStack(alignment: .leading, spacing: 4) {
+                  Text("Manual Contribution Toggle")
+                    .foregroundColor(colors.textPrimary)
+                  Text("Testing Only")
+                    .font(.caption)
+                    .foregroundColor(colors.textSecondary)
+                }
+              }
+            }
+            .tint(colors.success)
             #endif
+            
+            Button(action: {
+              showingOnboardingAlert = true
+            }) {
+              HStack {
+                Image(systemName: "arrow.trianglehead.2.counterclockwise.rotate.90")
+                  .foregroundColor(colors.info)
+                VStack(alignment: .leading, spacing: 4) {
+                  Text(NSLocalizedString("settings.rerun_onboarding.title", comment: ""))
+                    .foregroundColor(colors.textPrimary)
+                  Text(NSLocalizedString("settings.rerun_onboarding.subtitle", comment: ""))
+                    .font(.caption)
+                    .foregroundColor(colors.textSecondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                  .foregroundColor(colors.textSecondary)
+              }
+            }
             
             Button(action: {
               showingResetAlert = true
@@ -486,6 +604,15 @@ struct SettingsViewNew: View {
         }
       } message: {
         Text("This will reset all your challenge completion statistics and remove them from iCloud.")
+      }
+      .alert(NSLocalizedString("settings.rerun_onboarding.alert.title", comment: ""), isPresented: $showingOnboardingAlert) {
+        Button("Cancel", role: .cancel) {}
+        Button(NSLocalizedString("settings.rerun_onboarding.alert.confirm", comment: ""), role: .none) {
+          // Just reset onboarding flag - keep all other settings
+          appSettings.hasCompletedOnboarding = false
+        }
+      } message: {
+        Text(NSLocalizedString("settings.rerun_onboarding.alert.message", comment: ""))
       }
     }
     .sheet(isPresented: $showingBlockingScheduleSheet) {

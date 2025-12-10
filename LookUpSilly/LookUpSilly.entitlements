@@ -15,5 +15,9 @@
 		<string>CloudKit</string>
 		<string>CloudDocuments</string>
 	</array>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.lookupsilly.app</string>
+	</array>
 </dict>
 </plist>

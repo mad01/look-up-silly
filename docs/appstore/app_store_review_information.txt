@@ -1,0 +1,90 @@
+TESTING INSTRUCTIONS (No login required)
+
+CONTRIBUTION TESTING:
+1. Launch → Complete onboarding → Contribution screen appears
+2. Tap any contribution option ($5, $10, $15)
+3. Complete purchase (StoreKit Testing)
+4. "Thank You" screen confirms contribution
+
+Alternative: Settings → "Support Development" → Select amount → Purchase
+
+Contributions: Optional one-time payments. App fully free without payment.
+- $4.99 - Small contribution
+- $9.99 - Medium contribution
+- $14.99 - Large contribution
+
+
+QUICK TEST:
+1. Grant Screen Time permission when prompted
+2. Select apps to block (e.g., choose any app)
+3. Home → Shows blocked apps and statistics
+4. Try opening a blocked app → Challenge appears
+5. Complete challenge → App unlocks temporarily
+6. Settings → Manage apps, pause challenges, view stats
+
+
+CONTEXT:
+Screen time management app with mindful challenges. Helps users pause before opening distracting apps.
+
+Features:
+• Block apps with Screen Time API
+• 5 challenge types: Path Recall, Color Tap, Math, Tic-Tac-Toe, Micro 2048
+• Pause challenges temporarily
+• Schedule blocking times
+• Track statistics and streaks
+
+
+PRIVACY:
+• Zero analytics or data collection
+• Settings in user's private iCloud
+• No company servers
+• Screen Time API used locally only
+• GDPR compliant
+
+
+IN-APP PURCHASES:
+Location: Onboarding flow + Settings → "Support Development"
+
+Product IDs:
+• com.lookupsilly.app.contribution.small ($4.99)
+• com.lookupsilly.app.contribution.medium ($9.99)
+• com.lookupsilly.app.contribution.large ($14.99)
+
+Type: Non-Consumable (one-time)
+Implementation: RevenueCat SDK, StoreKit Testing configured
+
+Privacy: https://dropbrain.io/lookupsilly/privacy_policy.html
+Terms: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+
+
+TECHNICAL:
+iOS 26+, Swift 6, SwiftUI, Screen Time API (FamilyControls), CloudKit, RevenueCat
+Offline-capable, iCloud sync
+
+
+EXPECTED BEHAVIOR:
+Launch: Onboarding on first run, Home view after
+Blocking: Challenge overlay on blocked apps
+Challenges: Random type, complete to unlock
+Unlock: Configurable duration (default 15 min)
+
+
+FAQ:
+Q: Screen Time permission? A: Required for blocking apps. Uses Apple's FamilyControls API.
+Q: Privacy? A: Zero tracking. All local/iCloud only.
+Q: Contributions? A: 100% optional. App fully functional without payment.
+Q: Multiple contributions? A: One-time only. Shows thank you badge after contributing.
+
+
+SUMMARY:
+Free screen time management app with mindful challenges.
+
+✅ No login - works immediately
+✅ Standard iOS in-app purchase (non-consumable)
+✅ Settings in user's private iCloud
+✅ Zero tracking
+✅ GDPR compliant
+✅ Fully functional without payment
+
+Test: Complete onboarding for contribution flow, or Settings → "Support Development"
+

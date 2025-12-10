@@ -1,0 +1,87 @@
+Look Up, Silly! - Break the Scroll Habit with Mindful Challenges
+
+Take back control of your screen time. Look Up, Silly! helps you build healthier phone habits by adding a mindful pause before opening distracting apps.
+
+--- HOW IT WORKS ---
+
+Choose which apps to block. Before you can open them, complete a quick mental challenge. This simple friction creates a moment of awareness, helping you decide if you really need that app right now.
+
+It's not about restriction—it's about intention.
+
+
+--- FIVE UNIQUE CHALLENGES ---
+
+• Path Recall - Remember and trace a pattern
+• Color Tap - Match colors, not words (Stroop effect)
+• Quick Math - Solve simple arithmetic
+• Tic-Tac-Toe - Beat the AI opponent
+• Micro 2048 - Complete a mini puzzle
+
+Each challenge takes just seconds but creates the pause you need.
+
+
+--- POWERFUL FEATURES ---
+
+• Block any app using Screen Time API
+• Set "Always Allowed" exceptions
+• Pause challenges when needed
+• Schedule blocking times
+• Track your challenge statistics
+• View completion streaks
+• Customize unlock duration
+• Works completely offline
+
+
+--- PRIVACY FIRST ---
+
+Your data stays yours. Always.
+
+• All settings stored in YOUR private iCloud
+• No company servers, no external databases
+• Zero analytics or tracking
+• We never see your data
+• GDPR compliant
+
+
+--- WHY CHALLENGES? ---
+
+Research shows that adding friction to automatic behaviors helps build awareness. Instead of mindlessly opening an app, you take a breath, engage your brain, and make a conscious choice.
+
+Many users report:
+• Less time on distracting apps
+• More awareness of phone habits
+• Feeling more in control
+• Breaking the "just checking" loop
+
+
+--- PERFECT FOR ---
+
+• Anyone wanting to reduce screen time
+• People trying to break social media habits
+• Those who reach for their phone on autopilot
+• Anyone who wants more intentional phone use
+• Students needing focus during study time
+
+
+--- FREE WITH OPTIONAL SUPPORT ---
+
+Look Up, Silly! is completely free with no ads. All features work without payment. 
+
+If you find the app helpful, you can optionally support development with a one-time contribution. But it's never required—the app stays free forever.
+
+
+--- SYSTEM REQUIREMENTS ---
+
+iOS 26.0 or later
+Screen Time permission required
+iCloud account for sync (optional)
+
+
+--- LEGAL ---
+
+Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Privacy Policy: https://dropbrain.io/lookupsilly/privacy_policy.html
+
+
+Look up from your phone. Be silly. Live more.
+

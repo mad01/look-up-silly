@@ -8,18 +8,11 @@ struct LookUpSillyApp: App {
   @StateObject private var appSettings = AppSettings()
   @State private var isReady = false
   @State private var showPauseDurationSheet = false
+  @State private var showShieldChallenge = false
   @Environment(\.scenePhase) private var scenePhase
   
-  init() {
-    // MARK: - RevenueCat Configuration
-    // Uncomment to enable contribution system
-    // Requires: RevenueCat account, API key, and product setup
-    // See: REVENUECAT_SETUP.md for instructions
-    
-    // Task { @MainActor in
-    //   RevenueCatManager.shared.configure()
-    // }
-  }
+  // Note: RevenueCat is configured in AppDelegate.didFinishLaunchingWithOptions
+  // to ensure it's ready before any purchase attempts
   
   var body: some Scene {
     WindowGroup {
@@ -38,6 +31,9 @@ struct LookUpSillyApp: App {
                 // Reload app settings when pause state changes from quick action
                 appSettings.objectWillChange.send()
               }
+              .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ShowShieldChallenge"))) { _ in
+                showShieldChallenge = true
+              }
           } else {
             StartupView()
           }
@@ -48,6 +44,14 @@ struct LookUpSillyApp: App {
               .environmentObject(appSettings)
               .transition(.opacity)
               .zIndex(1000)
+          }
+          
+          // Shield challenge overlay (shown when opened from shield)
+          if showShieldChallenge {
+            ShieldChallengeView(isPresented: $showShieldChallenge)
+              .environmentObject(appSettings)
+              .transition(.opacity)
+              .zIndex(1001)
           }
         }
       }
@@ -64,6 +68,9 @@ struct LookUpSillyApp: App {
         
         // Check if pause has expired on launch
         checkPauseExpiration()
+        
+        // Check if there's a pending shield challenge
+        checkPendingShieldChallenge()
       }
       .onChange(of: scenePhase) { oldPhase, newPhase in
         if newPhase == .active {
@@ -72,7 +79,13 @@ struct LookUpSillyApp: App {
           
           // Check if pause has expired when app becomes active
           checkPauseExpiration()
+          
+          // Check if there's a pending shield challenge
+          checkPendingShieldChallenge()
         }
+      }
+      .onOpenURL { url in
+        handleDeepLink(url: url)
       }
     }
   }
@@ -83,9 +96,32 @@ struct LookUpSillyApp: App {
         // Pause has expired, resume challenges
         appSettings.challengesPaused = false
         UserDefaults.standard.removeObject(forKey: "pauseEndTime")
+        UserDefaults.shared.removeObject(forKey: "pauseEndTime")
         ScreenTimeManager.shared.updateShielding()
         appDelegate.updateQuickActions()
       }
+    }
+  }
+  
+  private func checkPendingShieldChallenge() {
+    // Check if user tapped "Open Challenge" on shield
+    if UserDefaults.shared.bool(forKey: "pendingShieldChallenge") {
+      // Show the challenge view
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        showShieldChallenge = true
+      }
+    }
+  }
+  
+  private func handleDeepLink(url: URL) {
+    guard url.scheme == SharedConstants.urlScheme else { return }
+    
+    switch url.host {
+    case "challenge":
+      // Open challenge from shield
+      showShieldChallenge = true
+    default:
+      break
     }
   }
 }
