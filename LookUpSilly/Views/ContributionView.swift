@@ -39,111 +39,180 @@ struct ContributionView: View {
   }
   
   var contributionFormView: some View {
-    VStack(spacing: 30) {
-      Spacer()
-      
-      // Header
-      VStack(spacing: 12) {
-        Image(systemName: "heart.circle.fill")
-          .resizable()
-          .aspectRatio(contentMode: .fit)
-          .frame(width: 80, height: 80)
-          .foregroundStyle(colors.premium.gradient)
-        
-        Text(NSLocalizedString("contribution.title", comment: ""))
-          .font(.system(size: 28, weight: .bold, design: .rounded))
-          .foregroundColor(colors.textPrimary)
-        
-        Text(NSLocalizedString("contribution.subtitle", comment: ""))
-          .font(.system(size: 16))
-          .foregroundColor(colors.textSecondary)
-          .multilineTextAlignment(.center)
-      }
-      
-      if revenueCat.hasContributed {
-        HStack(spacing: 10) {
-          Image(systemName: "checkmark.circle.fill")
-            .foregroundColor(colors.success)
-          Text(String(format: NSLocalizedString("contribution.thank_you_badge", comment: ""), revenueCat.contributionAmount ?? ""))
-            .foregroundColor(colors.success)
-            .font(.subheadline.weight(.semibold))
-        }
+    ViewThatFits(in: .vertical) {
+      contributionFormContent(useSpacers: true)
         .padding(.horizontal, 20)
+      
+      ScrollView {
+        contributionFormContent(useSpacers: false)
+          .padding(.horizontal, 20)
+          .padding(.vertical, 24)
       }
-      
-      // Message
-      VStack(alignment: .leading, spacing: 12) {
-        Text(NSLocalizedString("contribution.body_primary", comment: ""))
-          .font(.subheadline)
-          .foregroundColor(colors.textPrimary)
-          .multilineTextAlignment(.center)
-        
-        Text(NSLocalizedString("contribution.body_secondary", comment: ""))
-          .font(.subheadline.bold())
-          .foregroundColor(colors.textPrimary)
-        
-        ContributionBenefitRow(icon: "hammer", text: NSLocalizedString("contribution.benefit.development", comment: ""))
-        ContributionBenefitRow(icon: "sparkles", text: NSLocalizedString("contribution.benefit.features", comment: ""))
-        ContributionBenefitRow(icon: "heart.fill", text: NSLocalizedString("contribution.benefit.free", comment: ""))
-      }
-      .padding(.horizontal, 40)
-      
-      Text(NSLocalizedString("contribution.note_optional", comment: ""))
-        .font(.caption)
-        .foregroundColor(colors.textSecondary)
-        .multilineTextAlignment(.center)
-        .padding(.horizontal, 32)
-      
-      // Contribution Options
-      VStack(spacing: 12) {
-        ForEach(RevenueCatManager.ContributionProduct.allCases, id: \.self) { product in
-          ContributionOptionButton(
-            product: product,
-            isSelected: selectedProduct == product,
-            isProcessing: isProcessing || revenueCat.isLoading,
-            isDisabled: revenueCat.hasContributed
-          ) {
-            guard !revenueCat.hasContributed else { return }
-            selectedProduct = product
-            Task { await handleContribution(product) }
-          }
-        }
-      }
-      .padding(.horizontal, 40)
-      .opacity(revenueCat.hasContributed ? 0.6 : 1.0)
-      
-      if let error = revenueCat.errorMessage {
-        Text(error)
-          .font(.caption)
-          .foregroundColor(colors.error)
-          .multilineTextAlignment(.center)
-          .padding(.horizontal, 40)
-      }
-      
-      Spacer()
-      
-      // Skip button
-      Button(action: {
-        onComplete()
-      }) {
-        Text(NSLocalizedString("contribution.maybe_later", comment: ""))
-          .font(.subheadline)
-          .foregroundColor(colors.textSecondary)
-      }
-      .disabled(isProcessing || revenueCat.isLoading)
-      .padding(.bottom, 20)
-      
-      Text(NSLocalizedString("contribution.footer", comment: ""))
-        .font(.caption)
-        .foregroundColor(colors.textSecondary)
-        .padding(.bottom, 40)
     }
   }
   
   var thankYouView: some View {
-    VStack(spacing: 30) {
-      Spacer()
+    ViewThatFits(in: .vertical) {
+      thankYouContent(useSpacers: true)
+        .padding(.horizontal, 20)
       
+      ScrollView {
+        thankYouContent(useSpacers: false)
+          .padding(.horizontal, 20)
+          .padding(.vertical, 24)
+      }
+    }
+  }
+  
+  @ViewBuilder
+  private func contributionFormContent(useSpacers: Bool) -> some View {
+    VStack(spacing: 30) {
+      if useSpacers { Spacer() }
+      
+      contributionHeader
+      
+      if revenueCat.hasContributed {
+        contributionBadge
+      }
+      
+      contributionMessage
+      
+      contributionNote
+      
+      contributionOptions
+      
+      contributionError
+      
+      if useSpacers { Spacer() }
+      
+      contributionSkip
+      
+      contributionFooter
+    }
+  }
+  
+  private var contributionHeader: some View {
+    VStack(spacing: 12) {
+      Image(systemName: "heart.circle.fill")
+        .resizable()
+        .aspectRatio(contentMode: .fit)
+        .frame(width: 80, height: 80)
+        .foregroundStyle(colors.premium.gradient)
+      
+      Text(NSLocalizedString("contribution.title", comment: ""))
+        .font(.system(size: 28, weight: .bold, design: .rounded))
+        .foregroundColor(colors.textPrimary)
+      
+      Text(NSLocalizedString("contribution.subtitle", comment: ""))
+        .font(.system(size: 16))
+        .foregroundColor(colors.textSecondary)
+        .multilineTextAlignment(.center)
+    }
+  }
+  
+  private var contributionBadge: some View {
+    HStack(spacing: 10) {
+      Image(systemName: "checkmark.circle.fill")
+        .foregroundColor(colors.success)
+      Text(String(format: NSLocalizedString("contribution.thank_you_badge", comment: ""), revenueCat.contributionAmount ?? ""))
+        .foregroundColor(colors.success)
+        .font(.subheadline.weight(.semibold))
+    }
+    .padding(.horizontal, 20)
+  }
+  
+  private var contributionMessage: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text(NSLocalizedString("contribution.body_primary", comment: ""))
+        .font(.subheadline)
+        .foregroundColor(colors.textPrimary)
+        .multilineTextAlignment(.center)
+      
+      Text(NSLocalizedString("contribution.body_secondary", comment: ""))
+        .font(.subheadline.bold())
+        .foregroundColor(colors.textPrimary)
+      
+      ContributionBenefitRow(icon: "hammer", text: NSLocalizedString("contribution.benefit.development", comment: ""))
+      ContributionBenefitRow(icon: "sparkles", text: NSLocalizedString("contribution.benefit.features", comment: ""))
+      ContributionBenefitRow(icon: "heart.fill", text: NSLocalizedString("contribution.benefit.free", comment: ""))
+    }
+    .padding(.horizontal, 40)
+  }
+  
+  private var contributionNote: some View {
+    Text(NSLocalizedString("contribution.note_optional", comment: ""))
+      .font(.caption)
+      .foregroundColor(colors.textSecondary)
+      .multilineTextAlignment(.center)
+      .padding(.horizontal, 32)
+  }
+  
+  private var contributionOptions: some View {
+    VStack(spacing: 12) {
+      ForEach(RevenueCatManager.ContributionProduct.allCases, id: \.self) { product in
+        ContributionOptionButton(
+          product: product,
+          isSelected: selectedProduct == product,
+          isProcessing: isProcessing || revenueCat.isLoading,
+          isDisabled: revenueCat.hasContributed
+        ) {
+          guard !revenueCat.hasContributed else { return }
+          selectedProduct = product
+          Task { await handleContribution(product) }
+        }
+      }
+    }
+    .padding(.horizontal, 40)
+    .opacity(revenueCat.hasContributed ? 0.6 : 1.0)
+  }
+  
+  @ViewBuilder
+  private var contributionError: some View {
+    if let error = revenueCat.errorMessage {
+      Text(error)
+        .font(.caption)
+        .foregroundColor(colors.error)
+        .multilineTextAlignment(.center)
+        .padding(.horizontal, 40)
+    }
+  }
+  
+  private var contributionSkip: some View {
+    Button(action: {
+      onComplete()
+    }) {
+      Text(NSLocalizedString("contribution.maybe_later", comment: ""))
+        .font(.subheadline)
+        .foregroundColor(colors.textSecondary)
+    }
+    .disabled(isProcessing || revenueCat.isLoading)
+    .padding(.bottom, 20)
+  }
+  
+  private var contributionFooter: some View {
+    Text(NSLocalizedString("contribution.footer", comment: ""))
+      .font(.caption)
+      .foregroundColor(colors.textSecondary)
+      .padding(.bottom, 40)
+  }
+  
+  @ViewBuilder
+  private func thankYouContent(useSpacers: Bool) -> some View {
+    VStack(spacing: 30) {
+      if useSpacers { Spacer() }
+      
+      thankYouHeader
+      
+      thankYouBody
+      
+      if useSpacers { Spacer() }
+      
+      thankYouButton
+    }
+  }
+  
+  private var thankYouHeader: some View {
+    VStack(spacing: 30) {
       Image(systemName: "checkmark.circle.fill")
         .resizable()
         .aspectRatio(contentMode: .fit)
@@ -153,29 +222,31 @@ struct ContributionView: View {
       Text(NSLocalizedString("contribution.thank_you_title", comment: ""))
         .font(.system(size: 36, weight: .bold, design: .rounded))
         .foregroundColor(colors.textPrimary)
-      
-      Text(NSLocalizedString("contribution.thank_you_body", comment: ""))
-        .font(.system(size: 16))
-        .foregroundColor(colors.textSecondary)
-        .multilineTextAlignment(.center)
-        .padding(.horizontal, 40)
-      
-      Spacer()
-      
-      Button(action: {
-        onComplete()
-      }) {
-        Text(NSLocalizedString("contribution.continue", comment: ""))
-          .font(.headline)
-          .foregroundColor(colors.textOnAccent)
-          .frame(maxWidth: .infinity)
-          .padding()
-          .background(colors.primary)
-          .cornerRadius(12)
-      }
-      .padding(.horizontal, 40)
-      .padding(.bottom, 50)
     }
+  }
+  
+  private var thankYouBody: some View {
+    Text(NSLocalizedString("contribution.thank_you_body", comment: ""))
+      .font(.system(size: 16))
+      .foregroundColor(colors.textSecondary)
+      .multilineTextAlignment(.center)
+      .padding(.horizontal, 40)
+  }
+  
+  private var thankYouButton: some View {
+    Button(action: {
+      onComplete()
+    }) {
+      Text(NSLocalizedString("contribution.continue", comment: ""))
+        .font(.headline)
+        .foregroundColor(colors.textOnAccent)
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(colors.primary)
+        .cornerRadius(12)
+    }
+    .padding(.horizontal, 40)
+    .padding(.bottom, 50)
   }
   
   private func handleContribution(_ product: RevenueCatManager.ContributionProduct) async {

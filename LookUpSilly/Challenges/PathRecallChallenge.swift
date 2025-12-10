@@ -30,11 +30,6 @@ class PathRecallChallenge: Challenge, ObservableObject {
     min(2 + (round - 1), 5)
   }
   
-  var nextIndex: Int? {
-    guard phase == .input, playerProgress < currentPath.count else { return nil }
-    return currentPath[playerProgress]
-  }
-  
   @MainActor
   func startRound(resetProgress: Bool) {
     if resetProgress {
@@ -64,12 +59,15 @@ class PathRecallChallenge: Challenge, ObservableObject {
   
   @MainActor
   private func playPreview() async {
+    // Small delay before showing first tile to let user get ready
+    try? await Task.sleep(nanoseconds: 600_000_000) // 0.6 seconds initial delay
+    
     for index in currentPath {
       try? Task.checkCancellation()
       highlightedIndex = index
-      try? await Task.sleep(nanoseconds: 450_000_000)
+      try? await Task.sleep(nanoseconds: 900_000_000) // 0.9 seconds highlight
       highlightedIndex = nil
-      try? await Task.sleep(nanoseconds: 160_000_000)
+      try? await Task.sleep(nanoseconds: 250_000_000) // 0.25 seconds gap
     }
     phase = .input
   }
@@ -161,68 +159,65 @@ struct PathRecallChallengeView: View {
   }
   
   var body: some View {
-    ScrollView {
-      VStack(spacing: 20) {
-        // Controls
-        HStack(spacing: 10) {
-          Spacer()
-          Button {
-            cancelChallenge()
-          } label: {
-            Image(systemName: "xmark")
-              .font(.system(size: 16, weight: .bold))
-              .foregroundColor(colors.textSecondary)
-              .padding(10)
-              .background(colors.surface.opacity(0.7), in: Circle())
-          }
-          .accessibilityLabel(Text(NSLocalizedString("challenge.cancel", comment: "")))
-          
-          Button(action: {
-            skipChallenge()
-          }) {
-            HStack(spacing: 6) {
-              Image(systemName: "xmark.circle.fill")
-                .font(.system(size: 20, weight: .semibold))
-              Text(skipButtonTitle)
-                .font(.footnote.weight(.semibold))
-            }
-            .foregroundColor(canSkip ? colors.textSecondary : colors.textDisabled)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(
-              Capsule()
-                .fill(colors.surface.opacity(0.8))
-                .overlay(
+    GeometryReader { geometry in
+      let isCompact = geometry.size.height < 700
+      
+      ScrollView {
+        VStack(spacing: isCompact ? 12 : 20) {
+          // Controls - Skip on left, X on right
+          HStack(spacing: 10) {
+            if !challenge.isTestMode {
+              Button(action: {
+                skipChallenge()
+              }) {
+                HStack(spacing: 6) {
+                  Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                  Text(skipButtonTitle)
+                    .font(.footnote.weight(.semibold))
+                }
+                .foregroundColor(canSkip ? colors.textSecondary : colors.textDisabled)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(
                   Capsule()
-                    .stroke(colors.divider, lineWidth: 1)
+                    .fill(colors.surface.opacity(0.8))
+                    .overlay(
+                      Capsule()
+                        .stroke(colors.divider, lineWidth: 1)
+                    )
                 )
-            )
+              }
+              .disabled(!canSkip)
+            }
+            
+            Spacer()
+            
+            Button {
+              cancelChallenge()
+            } label: {
+              Image(systemName: "xmark")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(colors.textSecondary)
+                .padding(10)
+                .background(colors.surface.opacity(0.7), in: Circle())
+            }
+            .accessibilityLabel(Text(NSLocalizedString("challenge.cancel", comment: "")))
           }
-          .padding(.trailing, 20)
-          .padding(.top, 20)
-          .disabled(!canSkip)
-        }
-        .frame(height: 40)
-        
-        // Header
-        VStack(spacing: 16) {
-          RoundedRectangle(cornerRadius: 20)
-            .fill(colors.pathRecall.gradient)
-            .frame(height: 110)
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 28)
+          .padding(.horizontal, 20)
+          .padding(.top, isCompact ? 12 : 20)
           
-          VStack(spacing: 6) {
+          // Header
+          VStack(spacing: isCompact ? 4 : 6) {
             Text(NSLocalizedString("challenge.path_recall.title", comment: ""))
-              .font(.system(size: 28, weight: .bold))
+              .font(.system(size: isCompact ? 22 : 28, weight: .bold))
               .foregroundColor(colors.textPrimary)
             
             Text(NSLocalizedString("challenge.path_recall.subtitle", comment: ""))
-              .font(.system(size: 14))
+              .font(.system(size: isCompact ? 12 : 14))
               .foregroundColor(colors.textSecondary)
           }
-        }
-        .padding(.top, 10)
+          .padding(.top, isCompact ? 4 : 10)
         
         // Progress
         Text(String(format: NSLocalizedString("challenge.path_recall.progress", comment: ""), challenge.round, challenge.totalRounds))
@@ -250,29 +245,21 @@ struct PathRecallChallengeView: View {
               .font(.headline)
           }
           
-          if let next = challenge.nextIndex, challenge.phase == .input {
-            Text(String(format: NSLocalizedString("challenge.path_recall.next_hint", comment: ""), next + 1))
-              .font(.caption)
-              .foregroundColor(colors.textSecondary)
-          } else {
-            // Keep layout stable between phases to avoid grid jump.
-            Text("placeholder")
-              .font(.caption)
-              .foregroundColor(colors.textSecondary)
-              .hidden()
-          }
+          // Keep layout stable between phases to avoid grid jump.
+          Text("placeholder")
+            .font(.caption)
+            .foregroundColor(colors.textSecondary)
+            .hidden()
         }
         
-        // Grid
+        // Grid - no hints shown, only highlight during preview
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: challenge.gridSize), spacing: 12) {
           ForEach(0..<(challenge.gridSize * challenge.gridSize), id: \.self) { index in
             let isHighlighted = challenge.highlightedIndex == index
-            let isNext = challenge.nextIndex == index
             let wasUsed = challenge.phase != .preview && challenge.currentPath.prefix(challenge.playerProgress).contains(index)
             
             RoundedRectangle(cornerRadius: 12)
               .fill(isHighlighted ? colors.pathRecall.opacity(0.9) :
-                    isNext ? colors.pathRecall.opacity(0.35) :
                     wasUsed ? colors.surfaceElevated : colors.surface)
               .frame(height: 70)
               .overlay(
@@ -323,11 +310,11 @@ struct PathRecallChallengeView: View {
           .padding(.horizontal, 40)
         }
         
-        Spacer()
-          .frame(height: 40)
+          Spacer()
+            .frame(height: isCompact ? 20 : 40)
+        }
       }
     }
-    .scrollDisabled(true)
     .background(colors.background.ignoresSafeArea())
     .interactiveDismissDisabled(!canSkip)
     .presentationDetents([.large])

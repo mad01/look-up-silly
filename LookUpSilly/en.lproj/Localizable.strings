@@ -91,7 +91,7 @@
 "challenge.type.micro2048.title" = "Micro 2048";
 "challenge.type.micro2048.description" = "Reach 64 in the puzzle";
 "challenge.type.colortap.title" = "Color Tap";
-"challenge.type.colortap.description" = "Tap the named color before time runs out";
+"challenge.type.colortap.description" = "Tap the word's color, not the text color!";
 "challenge.type.pathrecall.title" = "Path Recall";
 "challenge.type.pathrecall.description" = "Memorize and repeat the glowing path";
 
@@ -101,6 +101,7 @@
 
 "contribution.close" = "Close";
 "common.close" = "Close";
+"common.back" = "Back";
 "contribution.title" = "Support Look Up, Silly!";
 "contribution.subtitle" = "Optional one-time contribution to keep the app free.";
 "contribution.body_primary" = "Contributions do not unlock features. They simply help cover costs so we can keep Look Up, Silly! free and ad-free.";
@@ -150,9 +151,9 @@
 "challenge.micro2048.highest" = "HIGHEST";
 
 "challenge.color_tap.title" = "Color Tap";
-"challenge.color_tap.subtitle" = "Tap the named color before time runs out";
+"challenge.color_tap.subtitle" = "Tap the color that matches the WORD, not the text color!";
 "challenge.color_tap.progress" = "Round %d of %d";
-"challenge.color_tap.prompt" = "Tap the matching color";
+"challenge.color_tap.prompt" = "Tap the color named below";
 "challenge.color_tap.failed" = "Too slow or wrong color. Try again.";
 "challenge.color_tap.restart" = "Restart";
 "challenge.color_tap.color.sunset" = "Sunset";

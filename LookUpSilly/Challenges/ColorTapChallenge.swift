@@ -16,6 +16,8 @@ enum ColorTapState {
 
 // MARK: - Color Tap Challenge
 // Challenge: Tap the named color before time runs out. Survive all rounds.
+// Stroop effect: The word is displayed in a DIFFERENT color to confuse the player.
+// Player must tap the color matching the WORD, not the display color.
 class ColorTapChallenge: Challenge, ObservableObject {
   let type = ChallengeType.colorTap
   @Published var isCompleted = false
@@ -24,6 +26,7 @@ class ColorTapChallenge: Challenge, ObservableObject {
   let totalRounds = 12
   @Published var options: [ColorTapOption] = []
   @Published var currentPrompt: ColorTapOption?
+  @Published var promptDisplayColor: Color = .white // Stroop effect: different from actual color
   @Published var timeRemaining: Double = 0
   var isTestMode = false
   
@@ -52,7 +55,17 @@ class ColorTapChallenge: Challenge, ObservableObject {
     state = .playing
     options = Array(palette.shuffled().prefix(3))
     currentPrompt = options.randomElement()
+    updateDisplayColor()
     timeRemaining = timeLimit
+  }
+  
+  /// Stroop effect: Pick a display color that's DIFFERENT from the prompt's actual color
+  private func updateDisplayColor() {
+    guard let prompt = currentPrompt else { return }
+    // Get colors from options that are NOT the prompt color
+    let otherColors = options.filter { $0.id != prompt.id }.map { $0.color }
+    // Pick a random different color for display
+    promptDisplayColor = otherColors.randomElement() ?? palette.randomElement()?.color ?? .white
   }
   
   func select(_ option: ColorTapOption) {
@@ -66,6 +79,7 @@ class ColorTapChallenge: Challenge, ObservableObject {
         round += 1
         options = Array(palette.shuffled().prefix(3))
         currentPrompt = options.randomElement()
+        updateDisplayColor()
         timeRemaining = timeLimit
       }
     } else {
@@ -134,9 +148,35 @@ struct ColorTapChallengeView: View {
   var body: some View {
     ScrollView {
       VStack(spacing: 20) {
-        // Controls
+        // Controls - Skip on left, X on right
         HStack(spacing: 10) {
+          if !challenge.isTestMode {
+            Button(action: {
+              skipChallenge()
+            }) {
+              HStack(spacing: 6) {
+                Image(systemName: "xmark.circle.fill")
+                  .font(.system(size: 20, weight: .semibold))
+                Text(skipButtonTitle)
+                  .font(.footnote.weight(.semibold))
+              }
+              .foregroundColor(canSkip ? colors.textSecondary : colors.textDisabled)
+              .padding(.horizontal, 12)
+              .padding(.vertical, 8)
+              .background(
+                Capsule()
+                  .fill(colors.surface.opacity(0.8))
+                  .overlay(
+                    Capsule()
+                      .stroke(colors.divider, lineWidth: 1)
+                  )
+              )
+            }
+            .disabled(!canSkip)
+          }
+          
           Spacer()
+          
           Button {
             cancelChallenge()
           } label: {
@@ -147,33 +187,9 @@ struct ColorTapChallengeView: View {
               .background(colors.surface.opacity(0.7), in: Circle())
           }
           .accessibilityLabel(Text(NSLocalizedString("challenge.cancel", comment: "")))
-          
-          Button(action: {
-            skipChallenge()
-          }) {
-            HStack(spacing: 6) {
-              Image(systemName: "xmark.circle.fill")
-                .font(.system(size: 20, weight: .semibold))
-              Text(skipButtonTitle)
-                .font(.footnote.weight(.semibold))
-            }
-            .foregroundColor(canSkip ? colors.textSecondary : colors.textDisabled)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(
-              Capsule()
-                .fill(colors.surface.opacity(0.8))
-                .overlay(
-                  Capsule()
-                    .stroke(colors.divider, lineWidth: 1)
-                )
-            )
-          }
-          .padding(.trailing, 20)
-          .padding(.top, 20)
-          .disabled(!canSkip)
         }
-        .frame(height: 40)
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
         
         // Header
         VStack(spacing: 8) {
@@ -201,7 +217,7 @@ struct ColorTapChallengeView: View {
         }
         .padding(.horizontal, 24)
         
-        // Prompt
+        // Prompt - Stroop effect: word displayed in WRONG color
         if let prompt = challenge.currentPrompt {
           VStack(spacing: 12) {
             Text(NSLocalizedString("challenge.color_tap.prompt", comment: ""))
@@ -210,7 +226,7 @@ struct ColorTapChallengeView: View {
             
             Text(prompt.name)
               .font(.system(size: 32, weight: .bold))
-              .foregroundColor(colors.colorTap)
+              .foregroundColor(challenge.promptDisplayColor) // Stroop: displayed in different color!
           }
         }
         
@@ -276,7 +292,6 @@ struct ColorTapChallengeView: View {
           .frame(height: 40)
       }
     }
-    .scrollDisabled(true)
     .background(colors.background.ignoresSafeArea())
     .interactiveDismissDisabled(!canSkip)
     .presentationDetents([.large])

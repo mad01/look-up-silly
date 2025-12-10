@@ -271,9 +271,35 @@ struct TicTacToeView: View {
   var body: some View {
     ScrollView {
       VStack(spacing: 16) {
-        // Controls
+        // Controls - Skip on left, X on right
         HStack(spacing: 10) {
+          if !challenge.isTestMode {
+            Button(action: {
+              skipChallenge()
+            }) {
+              HStack(spacing: 6) {
+                Image(systemName: "xmark.circle.fill")
+                  .font(.system(size: 20, weight: .semibold))
+                Text(skipButtonTitle)
+                  .font(.footnote.weight(.semibold))
+              }
+              .foregroundColor(canSkip ? colors.textSecondary : colors.textDisabled)
+              .padding(.horizontal, 12)
+              .padding(.vertical, 8)
+              .background(
+                Capsule()
+                  .fill(colors.surface.opacity(0.8))
+                  .overlay(
+                    Capsule()
+                      .stroke(colors.divider, lineWidth: 1)
+                  )
+              )
+            }
+            .disabled(!canSkip)
+          }
+          
           Spacer()
+          
           Button {
             cancelChallenge()
           } label: {
@@ -284,33 +310,9 @@ struct TicTacToeView: View {
               .background(colors.surface.opacity(0.7), in: Circle())
           }
           .accessibilityLabel(Text(NSLocalizedString("challenge.cancel", comment: "")))
-          
-          Button(action: {
-            skipChallenge()
-          }) {
-            HStack(spacing: 6) {
-              Image(systemName: "xmark.circle.fill")
-                .font(.system(size: 20, weight: .semibold))
-              Text(skipButtonTitle)
-                .font(.footnote.weight(.semibold))
-            }
-            .foregroundColor(canSkip ? colors.textSecondary : colors.textDisabled)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(
-              Capsule()
-                .fill(colors.surface.opacity(0.8))
-                .overlay(
-                  Capsule()
-                    .stroke(colors.divider, lineWidth: 1)
-                )
-            )
-          }
-          .padding(.trailing, 20)
-          .padding(.top, 20)
-          .disabled(!canSkip)
         }
-        .frame(height: 40)
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
         
         // Header
         VStack(spacing: 8) {
@@ -415,7 +417,6 @@ struct TicTacToeView: View {
           .frame(height: 40)
       }
     }
-    .scrollDisabled(true)
     .background(colors.background.ignoresSafeArea())
     .interactiveDismissDisabled(!canSkip)
     .presentationDetents([.large])

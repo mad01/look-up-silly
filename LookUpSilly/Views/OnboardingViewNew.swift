@@ -66,8 +66,20 @@ struct OnboardingViewNew: View {
   }
   
   var welcomePage: some View {
+    ViewThatFits(in: .vertical) {
+      welcomePageContent(useSpacers: true)
+      
+      ScrollView {
+        welcomePageContent(useSpacers: false)
+          .padding(.vertical, 40)
+      }
+    }
+  }
+  
+  @ViewBuilder
+  private func welcomePageContent(useSpacers: Bool) -> some View {
     VStack(spacing: 30) {
-      Spacer()
+      if useSpacers { Spacer() }
       
       Image("AppLogo")
         .resizable()
@@ -85,7 +97,7 @@ struct OnboardingViewNew: View {
         .foregroundColor(colors.textSecondary)
         .padding(.horizontal, 40)
       
-      Spacer()
+      if useSpacers { Spacer() }
       
       Button(action: { withAnimation { currentPage = 1 } }) {
         Text("Get Started")
@@ -97,18 +109,24 @@ struct OnboardingViewNew: View {
           .cornerRadius(12)
       }
       .padding(.horizontal, 40)
-      .padding(.bottom, 50)
+      .padding(.bottom, useSpacers ? 50 : 20)
     }
   }
   
   var appSelectionPage: some View {
     ScrollView {
       VStack(spacing: 30) {
+        HStack {
+          backButton(to: 0)
+          Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
+        
         VStack(spacing: 12) {
           Text("Choose Apps to Block")
             .font(.system(size: 28, weight: .bold))
             .foregroundColor(colors.textPrimary)
-            .padding(.top, 60)
           
           Text("Select apps that distract you.\nYou'll need to complete a challenge to open them.")
             .font(.system(size: 16))
@@ -158,11 +176,17 @@ struct OnboardingViewNew: View {
   var cancelDelayPage: some View {
     ScrollView {
       VStack(spacing: 28) {
+        HStack {
+          backButton(to: 1)
+          Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
+        
         VStack(spacing: 12) {
           Text(NSLocalizedString("onboarding.skip_delay.title", comment: ""))
             .font(.system(size: 28, weight: .bold))
             .foregroundColor(colors.textPrimary)
-            .padding(.top, 60)
           
           Text(NSLocalizedString("onboarding.skip_delay.subtitle", comment: ""))
             .font(.system(size: 16))
@@ -227,11 +251,17 @@ struct OnboardingViewNew: View {
   var howItWorksConfirmPage: some View {
     ScrollView {
       VStack(spacing: 20) {
+        HStack {
+          backButton(to: 2)
+          Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
+        
         VStack(spacing: 12) {
           Text(NSLocalizedString("onboarding.howitworks.title", comment: ""))
             .font(.system(size: 28, weight: .bold))
             .foregroundColor(colors.textPrimary)
-            .padding(.top, 60)
           
           Text(NSLocalizedString("onboarding.howitworks.subtitle", comment: ""))
             .font(.system(size: 16))
@@ -276,11 +306,17 @@ struct OnboardingViewNew: View {
   var contributionPage: some View {
     ScrollView {
       VStack(spacing: 24) {
+        HStack {
+          backButton(to: 3)
+          Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
+        
         VStack(spacing: 12) {
           Text(NSLocalizedString("contribution.title", comment: ""))
             .font(.system(size: 28, weight: .bold))
             .foregroundColor(colors.textPrimary)
-            .padding(.top, 60)
           
           Text(NSLocalizedString("contribution.subtitle", comment: ""))
             .font(.system(size: 16))
@@ -356,7 +392,7 @@ struct OnboardingViewNew: View {
         }
         
         Button(action: {
-          withAnimation { currentPage = 4 }
+          withAnimation { currentPage = 5 }
         }) {
           Text(revenueCat.hasContributed ? NSLocalizedString("contribution.continue_thanks", comment: "") : NSLocalizedString("contribution.skip_now", comment: ""))
             .font(.headline)
@@ -365,17 +401,37 @@ struct OnboardingViewNew: View {
             .padding()
             .background(colors.primary)
             .cornerRadius(12)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
         .padding(.horizontal, 40)
         .padding(.bottom, 40)
-        .disabled(revenueCat.isLoading)
       }
     }
   }
   
   var readyPage: some View {
+    ViewThatFits(in: .vertical) {
+      readyPageContent(useSpacers: true)
+      
+      ScrollView {
+        readyPageContent(useSpacers: false)
+          .padding(.vertical, 40)
+      }
+    }
+  }
+  
+  @ViewBuilder
+  private func readyPageContent(useSpacers: Bool) -> some View {
     VStack(spacing: 30) {
-      Spacer()
+      HStack {
+        backButton(to: 4)
+        Spacer()
+      }
+      .padding(.horizontal, 20)
+      .padding(.top, useSpacers ? 0 : 20)
+      
+      if useSpacers { Spacer() }
       
       Image(systemName: "checkmark.circle.fill")
         .resizable()
@@ -394,7 +450,7 @@ struct OnboardingViewNew: View {
       }
       .padding(.horizontal, 40)
       
-      Spacer()
+      if useSpacers { Spacer() }
       
       Button(action: {
         appSettings.hasCompletedOnboarding = true
@@ -408,7 +464,22 @@ struct OnboardingViewNew: View {
           .cornerRadius(12)
       }
       .padding(.horizontal, 40)
-      .padding(.bottom, 50)
+      .padding(.bottom, useSpacers ? 50 : 20)
+    }
+  }
+  
+  @ViewBuilder
+  private func backButton(to page: Int) -> some View {
+    Button(action: {
+      withAnimation { currentPage = page }
+    }) {
+      HStack(spacing: 6) {
+        Image(systemName: "chevron.left")
+          .font(.system(size: 16, weight: .semibold))
+        Text(NSLocalizedString("common.back", comment: ""))
+          .font(.subheadline)
+      }
+      .foregroundColor(colors.primary)
     }
   }
 }

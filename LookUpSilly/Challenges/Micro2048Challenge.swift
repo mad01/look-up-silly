@@ -404,93 +404,101 @@ struct Micro2048View: View {
   }
   
   var body: some View {
-    ScrollView {
-      VStack(spacing: 12) {
-        // Controls
-        HStack(spacing: 10) {
-          Spacer()
-          Button {
-            cancelChallenge()
-          } label: {
-            Image(systemName: "xmark")
-              .font(.system(size: 16, weight: .bold))
-              .foregroundColor(colors.textSecondary)
-              .padding(10)
-              .background(colors.surface.opacity(0.7), in: Circle())
-          }
-          .accessibilityLabel(Text(NSLocalizedString("challenge.cancel", comment: "")))
-          
-          Button(action: {
-            skipChallenge()
-          }) {
-            HStack(spacing: 6) {
-              Image(systemName: "xmark.circle.fill")
-                .font(.system(size: 20, weight: .semibold))
-              Text(skipButtonTitle)
-                .font(.footnote.weight(.semibold))
-            }
-            .foregroundColor(canSkip ? colors.textSecondary : colors.textDisabled)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(
-              Capsule()
-                .fill(colors.surface.opacity(0.8))
-                .overlay(
+    GeometryReader { geometry in
+      let isCompact = geometry.size.height < 700
+      let cellSize: CGFloat = isCompact ? 60 : 70
+      let spacing: CGFloat = isCompact ? 6 : 8
+      
+      ScrollView {
+        VStack(spacing: isCompact ? 8 : 12) {
+          // Controls - Skip on left, X on right
+          HStack(spacing: 10) {
+            if !challenge.isTestMode {
+              Button(action: {
+                skipChallenge()
+              }) {
+                HStack(spacing: 6) {
+                  Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                  Text(skipButtonTitle)
+                    .font(.footnote.weight(.semibold))
+                }
+                .foregroundColor(canSkip ? colors.textSecondary : colors.textDisabled)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(
                   Capsule()
-                    .stroke(colors.divider, lineWidth: 1)
+                    .fill(colors.surface.opacity(0.8))
+                    .overlay(
+                      Capsule()
+                        .stroke(colors.divider, lineWidth: 1)
+                    )
                 )
-            )
-          }
-          .padding(.trailing, 20)
-          .padding(.top, 20)
-          .disabled(!canSkip)
-        }
-        .frame(height: 40)
-        
-        // Header
-        VStack(spacing: 6) {
-          Image(systemName: "square.grid.4x3.fill")
-            .font(.system(size: 50))
-            .foregroundStyle(colors.micro2048.gradient)
-          
-          Text("Micro 2048")
-            .font(.system(size: 28, weight: .bold))
-            .foregroundColor(colors.textPrimary)
-          
-          Text("Reach 64 to continue")
-            .font(.system(size: 14))
-            .foregroundColor(colors.textSecondary)
-        }
-        .padding(.top, 8)
-        
-        // Score display
-        HStack(spacing: 20) {
-          ScoreBox(title: "SCORE", value: game.score)
-          ScoreBox(title: "HIGHEST", value: game.highestTile)
-        }
-        .padding(.horizontal, 40)
-        
-        // Status message
-        statusMessage
-          .padding(.vertical, 8)
-        
-        // Game Board - fixed size, no GeometryReader
-        GameBoardSimple(game: game)
-          .padding(.horizontal, 20)
-          .gesture(
-            DragGesture(minimumDistance: 20)
-              .onEnded { value in
-                handleSwipe(value)
               }
-          )
-        
-        // Action Buttons
-        actionButtons
-          .padding(.top, 20)
+              .disabled(!canSkip)
+            }
+            
+            Spacer()
+            
+            Button {
+              cancelChallenge()
+            } label: {
+              Image(systemName: "xmark")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(colors.textSecondary)
+                .padding(10)
+                .background(colors.surface.opacity(0.7), in: Circle())
+            }
+            .accessibilityLabel(Text(NSLocalizedString("challenge.cancel", comment: "")))
+          }
+          .padding(.horizontal, 20)
+          .padding(.top, isCompact ? 12 : 20)
+          
+          // Header - compact on small screens
+          VStack(spacing: isCompact ? 4 : 6) {
+            Image(systemName: "square.grid.4x3.fill")
+              .font(.system(size: isCompact ? 36 : 50))
+              .foregroundStyle(colors.micro2048.gradient)
+            
+            Text("Micro 2048")
+              .font(.system(size: isCompact ? 22 : 28, weight: .bold))
+              .foregroundColor(colors.textPrimary)
+            
+            Text("Reach 64 to continue")
+              .font(.system(size: isCompact ? 12 : 14))
+              .foregroundColor(colors.textSecondary)
+          }
+          .padding(.top, isCompact ? 4 : 8)
+          
+          // Score display - more compact on small screens
+          HStack(spacing: isCompact ? 12 : 20) {
+            ScoreBoxCompact(title: "SCORE", value: game.score, isCompact: isCompact)
+            ScoreBoxCompact(title: "HIGHEST", value: game.highestTile, isCompact: isCompact)
+          }
+          .padding(.horizontal, isCompact ? 20 : 40)
+          
+          // Status message
+          statusMessage
+            .padding(.vertical, isCompact ? 4 : 8)
+          
+          // Game Board - adaptive size
+          GameBoardAdaptive(game: game, cellSize: cellSize, spacing: spacing)
+            .padding(.horizontal, 20)
+            .gesture(
+              DragGesture(minimumDistance: 20)
+                .onEnded { value in
+                  handleSwipe(value)
+                }
+            )
+          
+          // Action Buttons
+          actionButtons
+            .padding(.top, isCompact ? 12 : 20)
+        }
+        .padding(.bottom, isCompact ? 20 : 40)
       }
-      .padding(.bottom, 40)
+      .scrollDisabled(true)
     }
-    .scrollDisabled(true)
     .background(colors.background.ignoresSafeArea())
     .interactiveDismissDisabled(!canSkip)
     .presentationDetents([.large])
@@ -646,6 +654,29 @@ struct ScoreBox: View {
   }
 }
 
+struct ScoreBoxCompact: View {
+  @Environment(\.themeColors) private var colors
+  let title: String
+  let value: Int
+  let isCompact: Bool
+  
+  var body: some View {
+    VStack(spacing: isCompact ? 2 : 4) {
+      Text(title)
+        .font(.system(size: isCompact ? 10 : 12, weight: .bold))
+        .foregroundColor(colors.textSecondary)
+      
+      Text("\(value)")
+        .font(.system(size: isCompact ? 18 : 24, weight: .bold, design: .rounded))
+        .foregroundColor(colors.textPrimary)
+    }
+    .frame(maxWidth: .infinity)
+    .padding(.vertical, isCompact ? 6 : 10)
+    .background(colors.surface)
+    .cornerRadius(8)
+  }
+}
+
 // MARK: - Simple Game Board (No GeometryReader)
 
 struct GameBoardSimple: View {
@@ -655,6 +686,59 @@ struct GameBoardSimple: View {
   // Fixed dimensions that work well on most devices
   private let cellSize: CGFloat = 70
   private let spacing: CGFloat = 8
+  
+  private var boardSize: CGFloat {
+    cellSize * 4 + spacing * 5
+  }
+  
+  var body: some View {
+    ZStack {
+      // Background
+      RoundedRectangle(cornerRadius: 12)
+        .fill(colors.surfaceElevated)
+      
+      // Grid of empty cells
+      VStack(spacing: spacing) {
+        ForEach(0..<4, id: \.self) { row in
+          HStack(spacing: spacing) {
+            ForEach(0..<4, id: \.self) { col in
+              RoundedRectangle(cornerRadius: 8)
+                .fill(colors.surface.opacity(0.5))
+                .frame(width: cellSize, height: cellSize)
+            }
+          }
+        }
+      }
+      .padding(spacing)
+      
+      // Tiles overlay
+      ForEach(game.tiles) { tile in
+        TileView2048(
+          value: tile.value,
+          size: cellSize,
+          isMerged: tile.isMerged,
+          isNew: tile.isNew
+        )
+        .position(positionFor(tile))
+      }
+    }
+    .frame(width: boardSize, height: boardSize)
+  }
+  
+  private func positionFor(_ tile: GameTile) -> CGPoint {
+    let x = spacing + CGFloat(tile.position.col) * (cellSize + spacing) + cellSize / 2
+    let y = spacing + CGFloat(tile.position.row) * (cellSize + spacing) + cellSize / 2
+    return CGPoint(x: x, y: y)
+  }
+}
+
+// MARK: - Adaptive Game Board (for small screens)
+
+struct GameBoardAdaptive: View {
+  @Environment(\.themeColors) private var colors
+  @ObservedObject var game: Micro2048Game
+  let cellSize: CGFloat
+  let spacing: CGFloat
   
   private var boardSize: CGFloat {
     cellSize * 4 + spacing * 5

@@ -114,38 +114,71 @@ struct TimesSavedChartView: View {
   var body: some View {
     VStack(spacing: 12) {
       // Header with total count
-      HStack(alignment: .top, spacing: 12) {
-        VStack(alignment: .leading, spacing: 4) {
-          HStack(spacing: 6) {
-            Image(systemName: "checkmark.shield.fill")
-              .font(.title3)
-              .foregroundColor(colors.success)
+      ViewThatFits(in: .horizontal) {
+        HStack(alignment: .top, spacing: 12) {
+          VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+              Image(systemName: "checkmark.shield.fill")
+                .font(.title3)
+                .foregroundColor(colors.success)
+              
+              Text("\(statsManager.totalChallengesContinued)")
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundColor(colors.success)
+                .contentTransition(.numericText())
+              
+              Text(NSLocalizedString("home.times_saved", comment: ""))
+                .font(.headline)
+                .foregroundColor(colors.textPrimary)
+            }
             
-            Text("\(statsManager.totalChallengesContinued)")
-              .font(.system(size: 28, weight: .bold, design: .rounded))
-              .foregroundColor(colors.success)
-              .contentTransition(.numericText())
+            Text(NSLocalizedString("home.times_saved_subtitle", comment: ""))
+              .font(.caption)
+              .foregroundColor(colors.textSecondary)
+          }
+          
+          Spacer()
+          
+          Picker("Range", selection: $selectedDays) {
+            ForEach(availableRanges, id: \.self) { days in
+              Text(String(format: NSLocalizedString("home.days_range_option", comment: ""), days))
+                .tag(days)
+            }
+          }
+          .pickerStyle(.segmented)
+          .frame(maxWidth: 220)
+        }
+        
+        VStack(alignment: .leading, spacing: 12) {
+          VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+              Image(systemName: "checkmark.shield.fill")
+                .font(.title3)
+                .foregroundColor(colors.success)
+              
+              Text("\(statsManager.totalChallengesContinued)")
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundColor(colors.success)
+                .contentTransition(.numericText())
+            }
             
             Text(NSLocalizedString("home.times_saved", comment: ""))
               .font(.headline)
               .foregroundColor(colors.textPrimary)
+            
+            Text(NSLocalizedString("home.times_saved_subtitle", comment: ""))
+              .font(.caption)
+              .foregroundColor(colors.textSecondary)
           }
           
-          Text(NSLocalizedString("home.times_saved_subtitle", comment: ""))
-            .font(.caption)
-            .foregroundColor(colors.textSecondary)
-        }
-        
-        Spacer()
-        
-        Picker("Range", selection: $selectedDays) {
-          ForEach(availableRanges, id: \.self) { days in
-            Text(String(format: NSLocalizedString("home.days_range_option", comment: ""), days))
-              .tag(days)
+          Picker("Range", selection: $selectedDays) {
+            ForEach(availableRanges, id: \.self) { days in
+              Text(String(format: NSLocalizedString("home.days_range_option", comment: ""), days))
+                .tag(days)
+            }
           }
+          .pickerStyle(.segmented)
         }
-        .pickerStyle(.segmented)
-        .frame(maxWidth: 220)
       }
       
       // Line Chart
