@@ -17,7 +17,7 @@ class PathRecallChallenge: Challenge, ObservableObject {
   @Published var round: Int = 1
   
   let gridSize = 4
-  let totalRounds = 4
+  let totalRounds = 5
   var isTestMode = false
   
   private var previewTask: Task<Void, Never>?
@@ -27,7 +27,7 @@ class PathRecallChallenge: Challenge, ObservableObject {
   }
   
   var currentPathLength: Int {
-    min(2 + (round - 1), 5)
+    min(2 + (round - 1), 6)
   }
   
   @MainActor
@@ -139,6 +139,7 @@ struct PathRecallChallengeView: View {
   private let timer = Timer.publish(every: 0.05, on: .main, in: .common).autoconnect()
   @State private var hasRecordedStart = false
   @State private var outcome: ChallengeOutcome = .pending
+  @State private var tappedIndex: Int?
   
   var skipDelayRemaining: Int {
     guard !challenge.isTestMode else { return 0 }
@@ -257,10 +258,14 @@ struct PathRecallChallengeView: View {
           ForEach(0..<(challenge.gridSize * challenge.gridSize), id: \.self) { index in
             let isHighlighted = challenge.highlightedIndex == index
             let wasUsed = challenge.phase != .preview && challenge.currentPath.prefix(challenge.playerProgress).contains(index)
+            let isActiveTap = challenge.phase == .input && tappedIndex == index
             
             RoundedRectangle(cornerRadius: 12)
-              .fill(isHighlighted ? colors.pathRecall.opacity(0.9) :
-                    wasUsed ? colors.surfaceElevated : colors.surface)
+              .fill(
+                isHighlighted || isActiveTap
+                ? colors.pathRecall.opacity(0.9)
+                : (wasUsed ? colors.surfaceElevated : colors.surface)
+              )
               .frame(height: 70)
               .overlay(
                 Text("\(index + 1)")
@@ -272,9 +277,13 @@ struct PathRecallChallengeView: View {
                   .stroke(isHighlighted ? colors.textOnAccent.opacity(0.6) : colors.divider, lineWidth: 2)
               )
               .onTapGesture {
+                tappedIndex = index
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                  if tappedIndex == index { tappedIndex = nil }
+                }
                 challenge.handleTap(index)
               }
-              .animation(.easeInOut(duration: 0.18), value: isHighlighted)
+              .animation(.easeInOut(duration: 0.18), value: isHighlighted || isActiveTap)
           }
         }
         .padding(.horizontal, 20)

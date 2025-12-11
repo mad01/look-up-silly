@@ -10,6 +10,11 @@ struct ChallengeTestView: View {
   @State private var currentChallenge: (any Challenge)?
   let isDevelopment: Bool
   
+  private let gridColumns = [
+    GridItem(.flexible(), spacing: 12),
+    GridItem(.flexible(), spacing: 12)
+  ]
+  
   private var isShowingChallenge: Binding<Bool> {
     Binding(
       get: { currentChallenge != nil },
@@ -36,10 +41,6 @@ struct ChallengeTestView: View {
                 .frame(width: 80, height: 80)
                 .foregroundStyle(colors.primary.gradient)
               
-              Text(isDevelopment ? "Test Challenges" : "Play for Fun")
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundColor(colors.textPrimary)
-              
               Text(isDevelopment ? "Test challenge mechanics" : "Practice challenges anytime")
                 .font(.system(size: 16))
                 .foregroundColor(colors.textSecondary)
@@ -53,7 +54,7 @@ struct ChallengeTestView: View {
                 .foregroundColor(colors.textPrimary)
                 .padding(.horizontal, 20)
               
-              VStack(spacing: 12) {
+              LazyVGrid(columns: gridColumns, spacing: 12) {
                 ForEach(ChallengeType.allCases, id: \.self) { challengeType in
                   ChallengeTypeCard(
                     challengeType: challengeType,
@@ -178,29 +179,36 @@ struct ChallengeTypeCard: View {
   
   var body: some View {
     Button(action: action) {
-      HStack {
-        Image(systemName: challengeType.icon)
-          .font(.system(size: 32))
-          .foregroundColor(colors.primary)
-          .frame(width: 50)
+      VStack(alignment: .leading, spacing: 10) {
+        HStack(alignment: .top) {
+          Image(systemName: challengeType.icon)
+            .font(.system(size: 28, weight: .semibold))
+            .foregroundColor(colors.primary)
+            .frame(width: 32, alignment: .leading)
+          
+          Spacer()
+          
+          Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+            .foregroundColor(isSelected ? colors.success : colors.textDisabled)
+            .font(.system(size: 22))
+        }
         
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
           Text(challengeType.title)
             .font(.headline)
             .foregroundColor(colors.textPrimary)
+            .lineLimit(2)
+            .multilineTextAlignment(.leading)
           
           Text(challengeType.description)
             .font(.caption)
             .foregroundColor(colors.textSecondary)
+            .lineLimit(2)
+            .multilineTextAlignment(.leading)
         }
-        
-        Spacer()
-        
-        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-          .foregroundColor(isSelected ? colors.success : colors.textDisabled)
-          .font(.system(size: 24))
       }
       .padding()
+      .frame(maxWidth: .infinity, minHeight: 132, alignment: .topLeading)
       .background(isSelected ? colors.primary.opacity(0.2) : colors.surface)
       .cornerRadius(12)
       .overlay(
