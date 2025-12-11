@@ -100,6 +100,7 @@ class AppSettings: ObservableObject {
        let decoded = try? JSONDecoder().decode([String].self, from: data) {
       let types = decoded.compactMap { ChallengeType(rawValue: $0) }
       enabledChallengeTypes = types.isEmpty ? Set(ChallengeType.allCases) : Set(types)
+      enabledChallengeTypes.insert(.gravityDrop)
     }
     
     // Load active blocking hours
@@ -133,6 +134,7 @@ class AppSettings: ObservableObject {
        let decoded = try? JSONDecoder().decode([String].self, from: data) {
       let types = decoded.compactMap { ChallengeType(rawValue: $0) }
       enabledChallengeTypes = types.isEmpty ? Set(ChallengeType.allCases) : Set(types)
+      enabledChallengeTypes.insert(.gravityDrop)
     } else {
       enabledChallengeTypes = Set(ChallengeType.allCases)
     }

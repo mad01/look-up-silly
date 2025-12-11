@@ -57,6 +57,7 @@ struct WarmCalmTheme {
   static let micro2048 = Color(red: 220/255, green: 170/255, blue: 110/255)     // Warm amber
   static let colorTap = Color(red: 230/255, green: 150/255, blue: 120/255)      // Warm coral
   static let pathRecall = Color(red: 190/255, green: 165/255, blue: 130/255)    // Soft sand
+  static let gravityDrop = Color(red: 0/255, green: 220/255, blue: 255/255)     // Neon cyan
   static let stackBuilder = Color(red: 205/255, green: 135/255, blue: 105/255)  // Terracotta stack
   
   // Chart/Statistics colors - Warm harmonious palette
@@ -123,6 +124,7 @@ struct ThemeColors {
   let micro2048 = WarmCalmTheme.micro2048
   let colorTap = WarmCalmTheme.colorTap
   let pathRecall = WarmCalmTheme.pathRecall
+  let gravityDrop = WarmCalmTheme.gravityDrop
   let stackBuilder = WarmCalmTheme.stackBuilder
   
   let chartPrimary = WarmCalmTheme.chartPrimary

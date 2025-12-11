@@ -162,6 +162,10 @@ struct ChallengeTestView: View {
       let challenge = PathRecallChallenge()
       challenge.isTestMode = true
       currentChallenge = challenge
+    case .gravityDrop:
+      let challenge = GravityGameChallenge()
+      challenge.isTestMode = true
+      currentChallenge = challenge
     }
   }
 }

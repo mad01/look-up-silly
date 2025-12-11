@@ -389,6 +389,16 @@ struct SettingsViewNew: View {
                 Text("\(statsManager.pathRecallChallengesCompleted)")
                   .foregroundColor(colors.textPrimary)
               }
+
+              HStack {
+                Image(systemName: ChallengeType.gravityDrop.icon)
+                  .foregroundColor(colors.gravityDrop)
+                Text(ChallengeType.gravityDrop.title)
+                  .foregroundColor(colors.textSecondary)
+                Spacer()
+                Text("\(statsManager.gravityDropChallengesCompleted)")
+                  .foregroundColor(colors.textPrimary)
+              }
               
               if let lastSync = statsManager.lastSyncDate {
                 Divider()

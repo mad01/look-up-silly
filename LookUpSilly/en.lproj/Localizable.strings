@@ -94,6 +94,8 @@
 "challenge.type.colortap.description" = "Tap the word's color, not the text color!";
 "challenge.type.pathrecall.title" = "Path Recall";
 "challenge.type.pathrecall.description" = "Memorize and repeat the glowing path";
+"challenge.type.gravitydrop.title" = "Neon Gravity Drop";
+"challenge.type.gravitydrop.description" = "Catch neon orbs, dodge red hazards";
 
 "challenge.skip.button_ready" = "Skip challenge";
 "challenge.skip.button_countdown" = "Skip in %ds";
@@ -172,6 +174,18 @@
 "challenge.path_recall.next_hint" = "Next: %d";
 "challenge.path_recall.replay" = "Show Path Again";
 "challenge.path_recall.restart" = "Restart";
+"challenge.gravitydrop.title" = "Neon Gravity Drop";
+"challenge.gravitydrop.subtitle" = "Catch green orbs, dodge red ones.";
+"challenge.gravitydrop.score" = "Score";
+"challenge.gravitydrop.timer" = "Time";
+"challenge.gravitydrop.game_over" = "Time's up!";
+"challenge.gravitydrop.start" = "Start";
+"challenge.gravitydrop.play_again" = "Play Again";
+"challenge.gravitydrop.final_score" = "Final Score: %d";
+"challenge.gravitydrop.goal" = "Goal: %d";
+"challenge.gravitydrop.need_points" = "Reach %d points to win.";
+"challenge.gravitydrop.win" = "You win!";
+"challenge.gravitydrop.high_score" = "High score: %d";
 
 
 /* Status */

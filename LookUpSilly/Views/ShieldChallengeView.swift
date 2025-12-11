@@ -141,6 +141,8 @@ struct ShieldChallengeView: View {
       currentChallenge = ColorTapChallenge()
     case .pathRecall:
       currentChallenge = PathRecallChallenge()
+    case .gravityDrop:
+      currentChallenge = GravityGameChallenge()
     }
     
     // Small delay before showing challenge

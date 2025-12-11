@@ -6,6 +6,7 @@ enum ChallengeType: String, CaseIterable {
   case micro2048 = "Micro 2048"
   case colorTap = "Color Tap"
   case pathRecall = "Path Recall"
+  case gravityDrop = "Neon Gravity Drop"
   
   var icon: String {
     switch self {
@@ -19,6 +20,8 @@ enum ChallengeType: String, CaseIterable {
       return "paintpalette.fill"
     case .pathRecall:
       return "brain.head.profile"
+    case .gravityDrop:
+      return "sparkles.rectangle.stack.fill"
     }
   }
   
@@ -34,6 +37,8 @@ enum ChallengeType: String, CaseIterable {
       return "challenge.type.colortap.title"
     case .pathRecall:
       return "challenge.type.pathrecall.title"
+    case .gravityDrop:
+      return "challenge.type.gravitydrop.title"
     }
   }
   
@@ -49,6 +54,8 @@ enum ChallengeType: String, CaseIterable {
       return "challenge.type.colortap.description"
     case .pathRecall:
       return "challenge.type.pathrecall.description"
+    case .gravityDrop:
+      return "challenge.type.gravitydrop.description"
     }
   }
   

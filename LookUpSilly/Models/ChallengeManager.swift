@@ -28,6 +28,8 @@ class ChallengeManager: ObservableObject {
       currentChallenge = ColorTapChallenge()
     case .pathRecall:
       currentChallenge = PathRecallChallenge()
+    case .gravityDrop:
+      currentChallenge = GravityGameChallenge()
     }
     
     showingChallenge = true
